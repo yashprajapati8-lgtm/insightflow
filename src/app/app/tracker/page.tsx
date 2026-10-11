@@ -74,10 +74,10 @@ function Board() {
   };
 
   return (
-    <div className="grid items-start gap-5 2xl:grid-cols-[minmax(0,1fr)_380px]">
+    <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
       <section aria-label="Issue board" className="flex flex-col gap-3">
         <p className="text-[13px] text-ink-2">Drag a card to change its status, or select it and use the status buttons.</p>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {STATUSES.map((st) => {
             const cards = items.filter((x) => x.t.status === st).sort((a, b) => b.issue.score - a.issue.score);
             return (
@@ -153,7 +153,7 @@ function Board() {
       </section>
 
       {current && (
-        <Panel className="flex flex-col gap-5 p-5 2xl:sticky 2xl:top-6" aria-label="Issue detail">
+        <Panel className="flex flex-col gap-5 p-5 xl:sticky xl:top-6" aria-label="Issue detail">
           <div className="flex flex-col gap-1">
             <span className="text-[13px] text-ink-2">
               Score {Math.round(current.issue.score)}, owned by {current.issue.owner}

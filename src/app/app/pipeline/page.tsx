@@ -235,6 +235,7 @@ export default function PipelinePage() {
             const on = i === picked;
             const Icon = s.icon;
             const running = i === 2 && busy;
+            const pending = i === 2 && !running && !allAdaption;
             return (
               <li key={s.name} className="flex items-stretch">
                 <button
@@ -249,16 +250,16 @@ export default function PipelinePage() {
                     <span className="flex items-center gap-1.5">
                       <Icon size={14} aria-hidden /> Stage {i + 1}
                     </span>
-                    <span className={`rounded px-1.5 py-0.5 text-[11px] font-semibold ${running ? "bg-attn text-on-attn" : "bg-pos-bg text-pos-fg"}`}>
-                      {running ? "Running" : "Ready"}
+                    <span className={`rounded px-1.5 py-0.5 text-[11px] font-semibold ${running ? "bg-attn text-on-attn" : pending ? "bg-attn-soft text-attn-text" : "bg-pos-bg text-pos-fg"}`}>
+                      {running ? "Running" : pending ? "Pending" : "Done"}
                     </span>
                   </span>
                   <span className="text-[15px] font-semibold">{s.name}</span>
                   <span className="text-[13px] text-ink-2">{s.result}</span>
                   <span className="mt-1 h-1 overflow-hidden rounded bg-line-soft">
                     <span
-                      className={`block h-full transition-[width] duration-500 ${running ? "bg-attn" : "bg-pos"}`}
-                      style={{ width: running ? `${Math.max(6, view.percent)}%` : "100%" }}
+                      className={`block h-full transition-[width] duration-500 ${running || pending ? "bg-attn" : "bg-pos"}`}
+                      style={{ width: running ? `${Math.max(6, view.percent)}%` : pending ? `${(stats.engines.adaption / (reviews.length || 1)) * 100}%` : "100%" }}
                     />
                   </span>
                 </button>

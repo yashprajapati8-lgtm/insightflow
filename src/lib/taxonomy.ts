@@ -13,7 +13,7 @@ export const ISSUES: IssueDef[] = [
     severity: "critical",
     complaint: "Charged more than once for one order",
     action: "Make payment requests idempotent so a retry cannot charge twice, and refund duplicate charges automatically.",
-    match: /charged (multiple|twice|two times|again)|multiple times for a single|double charge/i,
+    match: /charged (multiple|twice|two times|again)|still charged|multiple times for a single|double charge/i,
   },
   {
     id: "extra-payment",
@@ -85,7 +85,7 @@ export const ISSUES: IssueDef[] = [
     severity: "medium",
     complaint: "Delivery arrived late",
     action: "Send delay notices before customers ask. Where compensation is offered, reviews turn mixed rather than negative.",
-    match: /delay|late delivery|arrived late|took longer|delivery process/i,
+    match: /delay|late delivery|arrived late|was late|\blate by\b|deliver[^.]*\blate\b|took longer|delivery process/i,
   },
   {
     id: "support-quality",
@@ -94,7 +94,7 @@ export const ISSUES: IssueDef[] = [
     severity: "medium",
     complaint: "Support was slow or unhelpful",
     action: "Set a first-response target for support and escalate any ticket still unresolved after 48 hours to a team lead.",
-    match: /not helpful|unhelpful|unresolved|wait(ed)? (for )?a long|unresponsive|rude|slow (response|support)|took a long time|no response/i,
+    match: /not helpful|unhelpful|unresolved|wait(ed)? (for )?a long|unresponsive|rude|slow (response|support)|took a long time|no response|never answered|no reply|ignored/i,
   },
 ];
 

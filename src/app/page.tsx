@@ -63,7 +63,7 @@ export default function Landing() {
           <HeroFlow
             rows={rows}
             distinct={reviews.length}
-            issues={ranked.slice(0, 10).map((r) => ({ name: r.name, score: r.score, act: r.score >= ACT_NOW }))}
+            issues={ranked.map((r) => ({ name: r.name, score: r.score, act: r.score >= ACT_NOW }))}
           />
         </section>
 
