@@ -1,0 +1,176 @@
+@import "tailwindcss";
+
+/* Theme tokens. Light is the default; dark is set on <html data-theme="dark">. */
+:root {
+  --bg: #f3f5f9;
+  --surface: #ffffff;
+  --surface-2: #f7f9fc;
+  --line: #dde2ea;
+  --line-soft: #edf0f5;
+  --ink: #151b27;
+  --ink-2: #566072;
+  --ink-3: #8a93a3;
+  --primary: #151b27;
+  --on-primary: #ffffff;
+  --attn: #f2b544;
+  --on-attn: #3a2a00;
+  --attn-text: #8a5a00;
+  --attn-soft: #fdf3dc;
+  --neg: #b9472f;
+  --neg-bg: #f9e6e1;
+  --neg-fg: #8e2f1b;
+  --pos: #23735f;
+  --pos-bg: #ddf0ea;
+  --pos-fg: #1a5a4a;
+  --mix: #6a68ae;
+  --mix-bg: #e8e7f5;
+  --mix-fg: #45437f;
+  --neu: #b8bccb;
+  --bar-1: #151b27;
+  --bar-2: #5a7090;
+  --bar-3: #aebbcd;
+  --sidebar: #0f141d;
+  --sidebar-2: #1b2230;
+  --sidebar-ink: #e6eaf1;
+  --sidebar-ink-2: #8e98aa;
+  --shadow: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.06);
+  --shadow-lg: 0 12px 32px -8px rgb(16 24 40 / 0.18), 0 2px 6px rgb(16 24 40 / 0.06);
+  --focus: #151b27;
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --bg: #0b0f16;
+  --surface: #121823;
+  --surface-2: #171e2b;
+  --line: #263044;
+  --line-soft: #1c2433;
+  --ink: #e8ecf3;
+  --ink-2: #9ba5b6;
+  --ink-3: #6b7589;
+  --primary: #e8ecf3;
+  --on-primary: #0b0f16;
+  --attn: #f2b544;
+  --on-attn: #2a1e00;
+  --attn-text: #f4c56a;
+  --attn-soft: #2e2410;
+  --neg: #e2775e;
+  --neg-bg: #3a1c16;
+  --neg-fg: #f5ab9a;
+  --pos: #4fb596;
+  --pos-bg: #0f3229;
+  --pos-fg: #91dac2;
+  --mix: #9e9ce3;
+  --mix-bg: #25244a;
+  --mix-fg: #c5c3f4;
+  --neu: #4a5568;
+  --bar-1: #e8ecf3;
+  --bar-2: #7f96b8;
+  --bar-3: #43516a;
+  --sidebar: #070a10;
+  --sidebar-2: #141a26;
+  --sidebar-ink: #e6eaf1;
+  --sidebar-ink-2: #7f899b;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 16px 40px -8px rgb(0 0 0 / 0.6), 0 2px 8px rgb(0 0 0 / 0.4);
+  --focus: #f2b544;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-attn: var(--attn);
+  --color-on-attn: var(--on-attn);
+  --color-attn-text: var(--attn-text);
+  --color-attn-soft: var(--attn-soft);
+  --color-neg: var(--neg);
+  --color-neg-bg: var(--neg-bg);
+  --color-neg-fg: var(--neg-fg);
+  --color-pos: var(--pos);
+  --color-pos-bg: var(--pos-bg);
+  --color-pos-fg: var(--pos-fg);
+  --color-mix: var(--mix);
+  --color-mix-bg: var(--mix-bg);
+  --color-mix-fg: var(--mix-fg);
+  --color-neu: var(--neu);
+  --color-bar-1: var(--bar-1);
+  --color-bar-2: var(--bar-2);
+  --color-bar-3: var(--bar-3);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-2: var(--sidebar-2);
+  --color-sidebar-ink: var(--sidebar-ink);
+  --color-sidebar-ink-2: var(--sidebar-ink-2);
+  --font-sans: "Hanken Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Source Serif 4 Variable", Georgia, serif;
+  --shadow-card: var(--shadow);
+  --shadow-pop: var(--shadow-lg);
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Numbers that open their evidence. */
+.proof {
+  text-decoration: underline dotted;
+  text-decoration-color: var(--ink-3);
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1.5px;
+  cursor: pointer;
+}
+.proof:hover {
+  text-decoration-color: var(--ink);
+}
+
+.quote {
+  font-family: var(--font-serif);
+}
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--line-soft) 0px, var(--surface-2) 120px, var(--line-soft) 240px);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body, html { background: #fff !important; }
+  .print-page { border: 0 !important; box-shadow: none !important; padding: 0 !important; max-width: none !important; }
+}
