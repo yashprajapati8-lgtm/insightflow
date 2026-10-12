@@ -327,6 +327,25 @@ function StatePanel({
   const hot = focus ? isHotspot(st, focus.id) : false;
   const isTracked = focus ? focus.issues.some(tracked) : false;
 
+  // What customers in this state talk about, from the per-aspect labels (Adaption's, where it has run).
+  const aspects = new Map<string, { neg: number; pos: number }>();
+  let byAdaption = 0;
+  let labeled = 0;
+  for (const c of st.cities)
+    for (const { review, n } of c.reviews) {
+      if (focus && !focus.issues.includes(review.analysis.issueId ?? "")) continue;
+      labeled += n;
+      if (review.engine === "adaption") byAdaption += n;
+      for (const a of review.analysis.aspects) {
+        const k = a.topic.toLowerCase();
+        const v = aspects.get(k) ?? { neg: 0, pos: 0 };
+        if (a.sentiment === "negative") v.neg += n;
+        else if (a.sentiment === "positive") v.pos += n;
+        aspects.set(k, v);
+      }
+    }
+  const topAspects = [...aspects.entries()].sort((a, b) => b[1].neg + b[1].pos - (a[1].neg + a[1].pos)).slice(0, 6);
+
   return (
     <Panel className="flex flex-col gap-5 p-6" tone={hot ? "attn" : undefined}>
       <div className="flex flex-col gap-1">
@@ -389,6 +408,25 @@ function StatePanel({
         </ul>
         <span className="text-[11px] text-ink-3">The line marks 1×, the national rate. Bold means a real hotspot, not chance.</span>
       </div>
+
+      {topAspects.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <h3 className="text-sm font-semibold">What customers mention{focus ? ` in ${focus.name.toLowerCase()} reports` : ""}</h3>
+          <div className="flex flex-wrap gap-1.5">
+            {topAspects.map(([topic, v]) => (
+              <span key={topic} className="well inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[12px]">
+                <span className="capitalize">{topic}</span>
+                {v.neg > 0 && <span className="text-neg-fg tabular-nums">−{fmt(v.neg)}</span>}
+                {v.pos > 0 && <span className="text-pos-fg tabular-nums">+{fmt(v.pos)}</span>}
+              </span>
+            ))}
+          </div>
+          <span className="text-[11px] text-ink-3">
+            Aspect labels, aspect by aspect: a review can be negative on delivery and positive on support.{" "}
+            {labeled > 0 && `${Math.round((byAdaption / labeled) * 100)}% labeled by Adaption.`}
+          </span>
+        </div>
+      )}
 
       <div className="flex flex-col gap-2">
         <h3 className="text-sm font-semibold">Cities</h3>
