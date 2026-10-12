@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronRight, FileUp, Layers, Sparkles, ShieldCheck, Calculator, Play, Loader2, Download } from "lucide-react";
+import { type LucideIcon, ChevronRight, FileUp, Layers, Sparkles, ShieldCheck, Calculator, Play, Loader2, Download } from "lucide-react";
 import Papa from "papaparse";
 import { PageHeader } from "@/components/AppShell";
 import { Panel, Button, fmt, pct } from "@/components/ui";
@@ -12,7 +12,7 @@ import { analyzeWithRules } from "@/lib/rules";
 import gold from "@/data/gold.json";
 import type { Analysis, Review } from "@/lib/types";
 
-type Stage = { name: string; who: string; result: string; what: string; facts: [string, string][]; icon: React.ElementType };
+type Stage = { name: string; who: string; result: string; what: string; facts: [string, string][]; icon: LucideIcon };
 type JobView = { state: "idle" | "uploading" | "processing" | "running" | "done" | "failed"; percent: number; message: string };
 
 export default function PipelinePage() {
