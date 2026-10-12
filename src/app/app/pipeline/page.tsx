@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronRight, FileUp, Layers, Sparkles, ShieldCheck, Calculator, Play, Loader2 } from "lucide-react";
+import { ChevronRight, FileUp, Layers, Sparkles, ShieldCheck, Calculator, Play, Loader2, Download } from "lucide-react";
+import Papa from "papaparse";
 import { PageHeader } from "@/components/AppShell";
 import { Panel, Button, fmt, pct } from "@/components/ui";
 import { useStore } from "@/lib/store";
@@ -45,6 +46,20 @@ export default function PipelinePage() {
   }, [reviews]);
 
   const goldScore = useMemo(() => scoreGold(reviews), [reviews]);
+
+  /** Saves Adaption's labels as a CSV, so they can be built into the shipped sample (npm run build:sample). */
+  function downloadLabels() {
+    const rows = reviews
+      .filter((r) => r.engine === "adaption")
+      .map((r) => ({ id: r.id, review: r.text, completion: JSON.stringify(r.analysis) }));
+    const blob = new Blob([Papa.unparse(rows)], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "adaption-output.csv";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast(`Downloaded ${fmt(rows.length)} Adaption labels`);
+  }
 
   const finish = useCallback(
     async (datasetId: string) => {
@@ -291,6 +306,14 @@ export default function PipelinePage() {
               </div>
             ))}
           </dl>
+          {picked === 2 && stats.engines.adaption > 0 && (
+            <div className="flex flex-wrap items-center gap-3">
+              <Button size="sm" onClick={downloadLabels}>
+                <Download size={14} /> Download Adaption labels
+              </Button>
+              <span className="text-xs text-ink-2">{fmt(stats.engines.adaption)} rows as CSV: id, review, the JSON answer</span>
+            </div>
+          )}
           {picked === 2 && example && (
             <div className="flex flex-col gap-2 border-t border-line-soft pt-4">
               <h3 className="text-sm font-semibold">One row through this stage</h3>

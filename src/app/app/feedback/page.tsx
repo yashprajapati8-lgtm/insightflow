@@ -141,6 +141,11 @@ function Feedback() {
                           {r.category ?? "Uncategorized"}
                           {r.provisional && r.source !== "sample" ? ", provisional" : ""}
                           {r.corrected ? ", corrected by you" : ""}
+                          {r.engine === "adaption" && !r.corrected && (
+                            <span className="ml-2 inline-flex items-center gap-1 rounded-full border border-pos/30 bg-pos-bg px-2 py-px text-[11px] font-semibold text-pos-fg">
+                              <Sparkles size={10} aria-hidden /> Adaption confirmed
+                            </span>
+                          )}
                         </span>
                       </span>
                       <span>

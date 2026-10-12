@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowRight, Filter, Gauge, ListOrdered, PieChart, TrendingUp, Database } from "lucide-react";
+import { ArrowRight, Filter, Gauge, ListOrdered, PieChart, TrendingUp, Database, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/AppShell";
 import { Panel, PanelHeader, Segmented, Stat, ActNow, ButtonLink, fmt, pct } from "@/components/ui";
 import { Bar, Donut, TrendChart, SENT_COLOR } from "@/components/charts";
@@ -20,6 +20,7 @@ export default function OverviewPage() {
   const all = useStore((s) => s.reviews);
   const weights = useStore((s) => s.weights);
   const meta = useStore((s) => s.meta);
+  const adaptionCount = useStore((s) => s.reviews.filter((r) => r.engine === "adaption").length);
   const mode = useStore((s) => s.countMode);
   const setMode = useStore((s) => s.setCountMode);
   const show = useEvidence((s) => s.show);
@@ -354,6 +355,11 @@ export default function OverviewPage() {
         <Database size={14} aria-hidden />
         {fmt(meta.rows - meta.distinct)} of the {fmt(meta.rows)} rows ({pct((meta.rows - meta.distinct) / (meta.rows || 1))})
         repeat one of {fmt(meta.distinct)} distinct reviews. Counts above {mode === "rows" ? "include" : "exclude"} repeats.
+        {adaptionCount > 0 && (
+          <span className="inline-flex items-center gap-1 rounded-full border border-pos/30 bg-pos-bg px-2.5 py-0.5 text-xs font-semibold text-pos-fg">
+            <Sparkles size={11} aria-hidden /> {fmt(adaptionCount)} of {fmt(all.length)} labeled by Adaption
+          </span>
+        )}
         <Link href="/app/pipeline" className="font-medium text-ink underline underline-offset-4">
           See how the data was prepared
         </Link>
