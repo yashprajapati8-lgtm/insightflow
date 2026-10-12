@@ -3,8 +3,9 @@
 import Papa from "papaparse";
 import type { Review } from "./types";
 import { analyzeWithRules } from "./rules";
+import { resolveState } from "./places";
 
-export type Role = "text" | "category" | "date" | "source" | "ignore";
+export type Role = "text" | "category" | "date" | "source" | "state" | "city" | "ignore";
 
 export interface ParsedCsv {
   fileName: string;
@@ -17,6 +18,8 @@ const TEXT_NAMES = /^(review|feedback|text|comment|comments|message|body|content
 const CAT_NAMES = /^(category|topic|type|label|theme|department)$/i;
 const DATE_NAMES = /^(date|created|created_at|timestamp|time|submitted|submitted_at|review_date)$/i;
 const SRC_NAMES = /^(source|channel|platform|origin)$/i;
+const STATE_NAMES = /^(state|province|region|state_name|customer_state)$/i;
+const CITY_NAMES = /^(city|town|district|location|customer_city|city_name)$/i;
 
 function looksLikeDate(values: string[]) {
   const sample = values.filter(Boolean).slice(0, 30);
@@ -34,6 +37,8 @@ export function detectRoles(headers: string[], rows: Record<string, string>[]): 
     if (h === text) continue;
     const name = h.trim();
     if (CAT_NAMES.test(name)) roles[h] = "category";
+    else if (STATE_NAMES.test(name)) roles[h] = "state";
+    else if (CITY_NAMES.test(name)) roles[h] = "city";
     else if (DATE_NAMES.test(name) || looksLikeDate(rows.slice(0, 50).map((r) => r[h]))) roles[h] = "date";
     else if (SRC_NAMES.test(name)) roles[h] = "source";
   }
@@ -63,6 +68,8 @@ export function toReviews(csv: ParsedCsv) {
   const catCol = col("category");
   const dateCol = col("date");
   const srcCol = col("source");
+  const stateCol = col("state");
+  const cityCol = col("city");
   if (!textCol) throw new Error("Choose which column holds the feedback text.");
 
   const groups = new Map<string, Review>();
@@ -78,10 +85,14 @@ export function toReviews(csv: ParsedCsv) {
     const key = text.toLowerCase();
     const date = dateCol ? row[dateCol]?.trim() : undefined;
     const iso = date && !Number.isNaN(Date.parse(date)) ? new Date(date).toISOString() : undefined;
+    const city = cityCol ? (row[cityCol] ?? "").trim() : "";
+    const state = resolveState(stateCol ? row[stateCol] : "", city);
+    const place = state ? `${state}|${city}` : null;
     const g = groups.get(key);
     if (g) {
       g.count++;
       if (iso) g.dates = [...(g.dates ?? []), iso];
+      if (place) (g.places ??= {})[place] = (g.places[place] ?? 0) + 1;
       continue;
     }
     groups.set(key, {
@@ -92,11 +103,13 @@ export function toReviews(csv: ParsedCsv) {
       source: "csv",
       channel: srcCol ? row[srcCol]?.trim() || undefined : undefined,
       dates: iso ? [iso] : undefined,
+      places: place ? { [place]: 1 } : undefined,
       analysis: analyzeWithRules(text),
       engine: "rules",
       provisional: true,
     });
   }
   const reviews = [...groups.values()].sort((a, b) => b.count - a.count);
-  return { reviews, used, empty, hasDates: reviews.some((r) => (r.dates?.length ?? 0) > 0), hasCategory: !!catCol };
+  const located = reviews.reduce((a, r) => a + Object.values(r.places ?? {}).reduce((x, y) => x + y, 0), 0);
+  return { reviews, used, empty, located, hasDates: reviews.some((r) => (r.dates?.length ?? 0) > 0), hasCategory: !!catCol };
 }

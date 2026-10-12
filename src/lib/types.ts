@@ -26,6 +26,8 @@ export interface Review {
   channel?: string;
   /** ISO date strings for every occurrence, when the import had a date column. */
   dates?: string[];
+  /** Real locations from the import: "stateId|city" -> number of occurrences. */
+  places?: Record<string, number>;
   analysis: Analysis;
   engine: Engine;
   /** True until a batch (Adaption) result confirms a live or rule-based label. */

@@ -7,6 +7,7 @@
  */
 import type { Review } from "./types";
 import sim from "@/data/sim-locations.json";
+import { STATE_NAMES, STATE_CENTER, findCity } from "./places";
 
 export const SIMULATED_NOTE =
   "Simulated locations. The dataset has no location column, so each report was assigned a city by a seeded simulation to demonstrate this view. Review text and categories are unchanged.";
@@ -15,15 +16,7 @@ export type City = { id: string; name: string; state: string; lat: number; lon: 
 export const CITIES = (sim as { cities: City[] }).cities;
 const BY_REVIEW = (sim as unknown as { byReview: Record<string, [number, number][]> }).byReview;
 
-export const STATE_NAMES: Record<string, string> = {
-  an: "Andaman and Nicobar", ap: "Andhra Pradesh", ar: "Arunachal Pradesh", as: "Assam", br: "Bihar",
-  ch: "Chandigarh", ct: "Chhattisgarh", dn: "Dadra and Nagar Haveli", dd: "Daman and Diu", dl: "Delhi",
-  ga: "Goa", gj: "Gujarat", hr: "Haryana", hp: "Himachal Pradesh", jk: "Jammu, Kashmir and Ladakh",
-  jh: "Jharkhand", ka: "Karnataka", kl: "Kerala", ld: "Lakshadweep", mp: "Madhya Pradesh", mh: "Maharashtra",
-  mn: "Manipur", ml: "Meghalaya", mz: "Mizoram", nl: "Nagaland", or: "Odisha", py: "Puducherry", pb: "Punjab",
-  rj: "Rajasthan", sk: "Sikkim", tn: "Tamil Nadu", tg: "Telangana", tr: "Tripura", up: "Uttar Pradesh",
-  ut: "Uttarakhand", wb: "West Bengal",
-};
+export { STATE_NAMES };
 
 /** Issue groups the map can be viewed through. Colors follow the brief: delivery red, damage cyan, product teal. */
 export type Lens = { id: string; name: string; issues: string[]; color: string; owner: string };
@@ -45,6 +38,37 @@ export function project(lat: number, lon: number): [number, number] {
   return [(lon - 68.16) * PX_PER_DEG, ((merc(37.08) - merc(lat)) * 180) / Math.PI * PX_PER_DEG];
 }
 
+export function unproject(x: number, y: number): [lat: number, lon: number] {
+  const m = merc(37.08) - ((y / PX_PER_DEG) * Math.PI) / 180;
+  return [((2 * Math.atan(Math.exp(m)) - Math.PI / 2) * 180) / Math.PI, x / PX_PER_DEG + 68.16];
+}
+
+/** Turns a review's locations into [city, count] pairs: real ones from an import, or the simulated ones for the sample. */
+function placesOf(r: Review, real: boolean, virtual: Map<string, City>): [City, number][] {
+  if (!real) return (BY_REVIEW[r.id] ?? []).map(([ci, n]) => [CITIES[ci], n] as [City, number]).filter(([c]) => !!c);
+  const out: [City, number][] = [];
+  for (const [key, n] of Object.entries(r.places ?? {})) {
+    const [state, cityName = ""] = key.split("|");
+    const known = cityName ? findCity(cityName) : null;
+    if (known && known.state === state) {
+      out.push([known, n]);
+      continue;
+    }
+    const id = `${state}:${cityName.toLowerCase() || "*"}`;
+    let c = virtual.get(id);
+    if (!c) {
+      const [cx, cy] = STATE_CENTER[state] ?? [306, 348];
+      const a = (virtual.size * 2.4) % (Math.PI * 2);
+      const off = cityName ? 9 : 0;
+      const [lat, lon] = unproject(cx + Math.cos(a) * off, cy + Math.sin(a) * off);
+      c = { id, name: cityName || STATE_NAMES[state] || state, state, lat, lon };
+      virtual.set(id, c);
+    }
+    out.push([c, n]);
+  }
+  return out;
+}
+
 export type CityStat = { city: City; reports: number; byLens: Record<string, number>; reviews: { review: Review; n: number }[] };
 export type StateStat = {
   id: string;
@@ -62,7 +86,7 @@ export type StateStat = {
   cities: CityStat[];
 };
 export type Spread = { lens: Lens; reports: number; top: StateStat | null; topIndex: number; regional: boolean; hotspots: StateStat[] };
-export type GeoModel = { states: Record<string, StateStat>; spread: Spread[]; national: Record<string, number>; total: number; located: number };
+export type GeoModel = { simulated: boolean; states: Record<string, StateStat>; spread: Spread[]; national: Record<string, number>; total: number; located: number };
 
 const PRIOR = 60; // reports of "national average" blended into every state, so tiny states cannot top the chart by chance.
 export const REGIONAL_AT = 1.5;
@@ -72,22 +96,22 @@ export const isHotspot = (st: StateStat, lensId: string) => st.z[lensId] >= SIGN
 
 export function buildGeo(reviews: Review[]): GeoModel {
   const states: Record<string, StateStat> = {};
-  const cityStats = new Map<number, CityStat>();
+  const cityStats = new Map<string, CityStat>();
+  const real = reviews.some((r) => r.places && Object.keys(r.places).length);
+  const virtual = new Map<string, City>();
   const national: Record<string, number> = Object.fromEntries(LENSES.map((l) => [l.id, 0]));
   let total = 0;
   let located = 0;
 
   for (const r of reviews) {
     total += r.count;
-    const spots = BY_REVIEW[r.id];
-    if (!spots) continue;
+    const spots = placesOf(r, real, virtual);
+    if (!spots.length) continue;
     const lens = lensOf(r.analysis.issueId);
-    for (const [ci, n] of spots) {
-      const city = CITIES[ci];
-      if (!city) continue;
+    for (const [city, n] of spots) {
       located += n;
-      let cs = cityStats.get(ci);
-      if (!cs) cityStats.set(ci, (cs = { city, reports: 0, byLens: {}, reviews: [] }));
+      let cs = cityStats.get(city.id);
+      if (!cs) cityStats.set(city.id, (cs = { city, reports: 0, byLens: {}, reviews: [] }));
       cs.reports += n;
       cs.reviews.push({ review: r, n });
       const st = (states[city.state] ??= {
@@ -147,7 +171,7 @@ export function buildGeo(reviews: Review[]): GeoModel {
     return { lens: l, reports: national[l.id], top, topIndex, regional: hot.length > 0, hotspots: hot };
   }).filter((s) => s.reports > 0);
 
-  return { states, spread, national, total, located };
+  return { simulated: !real, states, spread, national, total, located };
 }
 
 /** Blends white toward a color. t in 0..1. */

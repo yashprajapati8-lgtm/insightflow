@@ -42,7 +42,7 @@ export default function MapPage() {
         if (prev) prev.count += n;
         else rows.push({ ...review, count: n });
       }
-    show(`${s.name}${l ? `: ${l.name.toLowerCase()}` : ""}`, `Simulated location · ${fmt(rows.reduce((a, r) => a + r.count, 0))} reports`, rows);
+    show(`${s.name}${l ? `: ${l.name.toLowerCase()}` : ""}`, `${geo.simulated ? "Simulated location · " : ""}${fmt(rows.reduce((a, r) => a + r.count, 0))} reports`, rows);
   }
 
   function openReview(r: Review, c: CityStat, n: number) {
@@ -50,7 +50,7 @@ export default function MapPage() {
     const issue = issueById(r.analysis.issueId);
     show(
       `${c.city.name}: ${issue ? issue.name.toLowerCase() : "this review"}`,
-      `Simulated location · ${fmt(n)} customers sent this exact review here`,
+      `${geo.simulated ? "Simulated location · " : ""}${fmt(n)} customers sent this exact review here`,
       same.length ? same : [{ ...r, count: n }],
     );
   }
@@ -62,7 +62,7 @@ export default function MapPage() {
         <Panel className="p-8">
           <EmptyState
             title="This dataset has no locations"
-            body="Add a state or city column to your CSV to see it on the map. The sample workspace includes a simulated demo."
+            body="Add a state or city column to your CSV and import it again to see it here. Reset to the sample workspace to see the simulated demo."
           />
         </Panel>
       </div>
@@ -74,9 +74,15 @@ export default function MapPage() {
       <PageHeader
         title="Map"
         actions={
-          <span className="inline-flex items-center gap-2 rounded-full border border-attn/50 bg-attn-soft px-3 py-1.5 text-[12px] font-semibold text-attn-text">
-            <MapPin size={13} /> Simulated locations
-          </span>
+          geo.simulated ? (
+            <span className="inline-flex items-center gap-2 rounded-full border border-attn/50 bg-attn-soft px-3 py-1.5 text-[12px] font-semibold text-attn-text">
+              <MapPin size={13} /> Simulated locations
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-2 rounded-full bg-pos-bg px-3 py-1.5 text-[12px] font-semibold text-pos-fg">
+              <MapPin size={13} /> Locations from your file
+            </span>
+          )
         }
       >
         Is a problem regional, or everywhere? Regional problems need a local fix. Problems that appear everywhere need one fix
@@ -84,7 +90,10 @@ export default function MapPage() {
       </PageHeader>
 
       <p className="flex items-start gap-2 text-[13px] text-ink-2">
-        <Info size={15} className="mt-0.5 shrink-0" /> {SIMULATED_NOTE}
+        <Info size={15} className="mt-0.5 shrink-0" />{" "}
+        {geo.simulated
+          ? SIMULATED_NOTE
+          : `${fmt(geo.located)} of ${fmt(geo.total)} reports have a state or city in your file. Cities we do not have coordinates for are placed at their state's center.`}
       </p>
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]">
@@ -136,6 +145,7 @@ export default function MapPage() {
         {st ? (
           <StatePanel
             st={st}
+            simulated={geo.simulated}
             lens={lens}
             onOpen={(l) => openState(st, l)}
             tracked={(id) => !!tracker[id]}
@@ -151,7 +161,7 @@ export default function MapPage() {
               track(issueId);
               addNote(
                 issueId,
-                `Map, simulated locations: ${st.name} has ${st.index[l.id].toFixed(1)}× the national rate of ${l.name.toLowerCase()} complaints. Start with ${top.join(" and ")}.`,
+                `Map${geo.simulated ? ", simulated locations" : ""}: ${st.name} has ${st.index[l.id].toFixed(1)}× the national rate of ${l.name.toLowerCase()} complaints. Start with ${top.join(" and ")}.`,
               );
               toast(`Tracked for ${st.name}, with a note`);
             }}
@@ -283,12 +293,14 @@ function topCities(st: StateStat, l: Lens) {
 
 function StatePanel({
   st,
+  simulated,
   lens,
   onOpen,
   onTrack,
   tracked,
 }: {
   st: StateStat;
+  simulated: boolean;
   lens: Lens | null;
   onOpen: (l: Lens | null) => void;
   onTrack: (l: Lens) => void;
@@ -309,7 +321,7 @@ function StatePanel({
   return (
     <Panel className="flex flex-col gap-5 p-6" tone={hot ? "attn" : undefined}>
       <div className="flex flex-col gap-1">
-        <span className="text-[12px] text-ink-2">State · simulated location</span>
+        <span className="text-[12px] text-ink-2">State{simulated ? " · simulated location" : ""}</span>
         <h2 className="text-2xl font-semibold tracking-[-0.02em]">{st.name}</h2>
         <p className="text-[13px] text-ink-2">
           {fmt(st.reports)} reports from {st.cities.length} {st.cities.length === 1 ? "city" : "cities"}, {fmt(st.complaints)} of them

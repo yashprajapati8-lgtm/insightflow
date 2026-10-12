@@ -253,6 +253,8 @@ function CsvImport() {
                           <option value="category">Category</option>
                           <option value="date">Date</option>
                           <option value="source">Source</option>
+                          <option value="state">State</option>
+                          <option value="city">City</option>
                           <option value="ignore">Ignore</option>
                         </select>
                       </label>
