@@ -14,6 +14,11 @@ export function adaptionConfigured() {
   return !!process.env.ADAPTION_API_KEY;
 }
 
+/** Paid runs are allowed locally, and on a deployment only when ADAPTION_ALLOW_RUNS=true. Protects credits on the public demo. */
+export function adaptionRunsAllowed() {
+  return adaptionConfigured() && (process.env.NODE_ENV !== "production" || process.env.ADAPTION_ALLOW_RUNS === "true");
+}
+
 async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     ...init,

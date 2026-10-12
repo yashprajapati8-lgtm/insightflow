@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adapt, adaptionConfigured } from "@/lib/adaption";
+import { adapt, adaptionConfigured, adaptionRunsAllowed } from "@/lib/adaption";
 
 export const runtime = "nodejs";
 
@@ -8,6 +8,9 @@ export async function POST(req: Request) {
   const id = url.searchParams.get("id");
   const estimate = url.searchParams.get("estimate") === "1";
   if (!adaptionConfigured()) return NextResponse.json({ error: "Adaption is not connected." }, { status: 501 });
+  if (!adaptionRunsAllowed()) {
+    return NextResponse.json({ error: "New Adaption runs are turned off on this deployment to protect credits." }, { status: 403 });
+  }
   if (!id) return NextResponse.json({ error: "Missing id." }, { status: 400 });
   try {
     return NextResponse.json(await adapt(id, estimate));

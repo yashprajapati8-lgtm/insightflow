@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { adaptionConfigured, createAndUpload } from "@/lib/adaption";
+import { adaptionConfigured, adaptionRunsAllowed, createAndUpload } from "@/lib/adaption";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -12,6 +12,9 @@ const Body = z.object({
 export async function POST(req: Request) {
   if (!adaptionConfigured()) {
     return NextResponse.json({ error: "Adaption is not connected. Add ADAPTION_API_KEY to the server environment." }, { status: 501 });
+  }
+  if (!adaptionRunsAllowed()) {
+    return NextResponse.json({ error: "New Adaption runs are turned off on this deployment to protect credits." }, { status: 403 });
   }
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Send { reviews: [{ id, text }] }." }, { status: 400 });

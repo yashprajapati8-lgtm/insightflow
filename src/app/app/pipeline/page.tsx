@@ -24,15 +24,16 @@ export default function PipelinePage() {
   const updateAnalyses = useStore((s) => s.updateAnalyses);
   const toast = useToast((s) => s.show);
   const [picked, setPicked] = useState(2);
-  const [config, setConfig] = useState<{ adaption: boolean; liveModel: string | null } | null>(null);
+  const [config, setConfig] = useState<{ adaption: boolean; allowRuns?: boolean; liveModel: string | null } | null>(null);
   const [view, setView] = useState<JobView>({ state: job ? "processing" : "idle", percent: 0, message: "" });
   const adaptStarted = useRef(false);
+  const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
     fetch("/api/adaption/config")
       .then((r) => r.json())
       .then(setConfig)
-      .catch(() => setConfig({ adaption: false, liveModel: null }));
+      .catch(() => setConfig({ adaption: false, allowRuns: false, liveModel: null }));
   }, []);
 
   const stats = useMemo(() => {
@@ -125,6 +126,12 @@ export default function PipelinePage() {
   }, [job, finish, setJob]);
 
   async function start() {
+    if (stats.engines.adaption > 0 && !confirming) {
+      setConfirming(true);
+      setTimeout(() => setConfirming(false), 5000);
+      return;
+    }
+    setConfirming(false);
     setView({ state: "uploading", percent: 0, message: `Uploading ${fmt(reviews.length)} distinct reviews.` });
     adaptStarted.current = false;
     try {
@@ -226,21 +233,36 @@ export default function PipelinePage() {
         actions={
           <div className="flex flex-wrap items-center gap-3">
             <JobBadge view={view} configured={config?.adaption} />
-            <Button variant="primary" onClick={start} disabled={busy || !config?.adaption}>
-              {busy ? <Loader2 size={15} className="animate-spin" /> : <Play size={15} />}
-              {allAdaption ? "Run Adaption again" : "Run Adaption on this dataset"}
-            </Button>
+            {stats.engines.adaption > 0 && (
+              <Button onClick={downloadLabels} title="CSV with id, review and Adaption's JSON answer">
+                <Download size={15} /> Download Adaption labels
+              </Button>
+            )}
+            {config?.allowRuns !== false && (
+              <Button variant="primary" onClick={start} disabled={busy || !config?.adaption}>
+                {busy ? <Loader2 size={15} className="animate-spin" /> : <Play size={15} />}
+                {confirming
+                  ? "Confirm: this uses credits"
+                  : stats.engines.adaption > 0
+                    ? "Run again (uses credits)"
+                    : "Run Adaption on this dataset"}
+              </Button>
+            )}
           </div>
         }
       >
         How {fmt(meta.rows)} raw rows become the analysis in this app. Select a stage to see what it did to this dataset.
       </PageHeader>
 
-      {(view.message || config?.adaption === false) && (
+      {(view.message || confirming || config?.adaption === false || (config?.adaption && config.allowRuns === false)) && (
         <p className={`text-[13px] ${view.state === "failed" ? "text-neg-fg" : "text-ink-2"}`} role="status">
-          {config?.adaption === false
-            ? "Adaption is not connected on this deployment. Add ADAPTION_API_KEY to the server environment to run it from here."
-            : view.message}
+          {confirming
+            ? `${fmt(stats.engines.adaption)} reviews already have Adaption labels. A new run spends credits again; click once more within 5 seconds to confirm.`
+            : config?.adaption === false
+              ? "Adaption is not connected on this deployment. The labels shown were produced by Adaption ahead of time and built into the sample."
+              : config?.allowRuns === false && !view.message
+                ? "The labels shown were produced by an Adaption batch run. New runs are turned off on this public demo to protect credits."
+                : view.message}
         </p>
       )}
 
@@ -250,7 +272,7 @@ export default function PipelinePage() {
             const on = i === picked;
             const Icon = s.icon;
             const running = i === 2 && busy;
-            const pending = i === 2 && !running && !allAdaption;
+            const pending = i === 2 && !running && stats.engines.adaption === 0;
             return (
               <li key={s.name} className="flex items-stretch">
                 <button
@@ -306,14 +328,6 @@ export default function PipelinePage() {
               </div>
             ))}
           </dl>
-          {picked === 2 && stats.engines.adaption > 0 && (
-            <div className="flex flex-wrap items-center gap-3">
-              <Button size="sm" onClick={downloadLabels}>
-                <Download size={14} /> Download Adaption labels
-              </Button>
-              <span className="text-xs text-ink-2">{fmt(stats.engines.adaption)} rows as CSV: id, review, the JSON answer</span>
-            </div>
-          )}
           {picked === 2 && example && (
             <div className="flex flex-col gap-2 border-t border-line-soft pt-4">
               <h3 className="text-sm font-semibold">One row through this stage</h3>
