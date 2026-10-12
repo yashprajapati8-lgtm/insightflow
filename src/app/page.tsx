@@ -6,6 +6,7 @@ import type { Review } from "@/lib/types";
 import { HeroFlow } from "@/components/HeroFlow";
 import { Logo } from "@/components/AppShell";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LandingMap } from "@/components/LandingMap";
 
 const reviews = (sample as { reviews: Review[] }).reviews;
 const rows = (sample as { rows: number }).rows;
@@ -26,6 +27,9 @@ export default function Landing() {
         <nav aria-label="Site" className="flex items-center gap-2 sm:gap-5">
           <a href="#how" className="hidden text-sm text-ink-2 hover:text-ink sm:inline">
             How it works
+          </a>
+          <a href="#map-h" className="hidden text-sm text-ink-2 hover:text-ink sm:inline">
+            Map
           </a>
           <Link href="/app/pipeline" className="hidden text-sm text-ink-2 hover:text-ink sm:inline">
             Where Adaption fits
@@ -65,6 +69,20 @@ export default function Landing() {
             distinct={reviews.length}
             issues={ranked.map((r) => ({ name: r.name, score: r.score, act: r.score >= ACT_NOW }))}
           />
+        </section>
+
+        <section aria-labelledby="map-h" className="mx-auto flex max-w-[1200px] flex-col gap-8 px-5 py-16 sm:px-8">
+          <div className="flex max-w-[64ch] flex-col gap-3">
+            <h2 id="map-h" className="text-[32px] leading-tight font-semibold tracking-[-0.02em]">
+              Is it a local problem, or everyone&apos;s problem?
+            </h2>
+            <p className="text-ink-2">
+              A delivery problem in two states needs a local fix. An app crash that hits every state needs one fix at the source.
+              InsightFlow tests each issue against the national rate, so chance alone never paints a state red. Drag to turn
+              India, then click a state.
+            </p>
+          </div>
+          <LandingMap />
         </section>
 
         <section id="how" aria-labelledby="how-h">

@@ -3,13 +3,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { CameraControls, Html, Line } from "@react-three/drei";
+import { CameraControls, CameraControlsImpl, Html, Line } from "@react-three/drei";
 import india from "@svg-maps/india";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
 import { project, tint, indexToT, isHotspot, lensOf, type GeoModel, type Lens, type CityStat } from "@/lib/geo";
 import type { Review } from "@/lib/types";
 
 const S = 0.1; // svg px to world units
+const A = CameraControlsImpl.ACTION;
 const CX = 306;
 const CY = 348;
 const toWorld = (x: number, y: number) => new THREE.Vector2((x - CX) * S, -(y - CY) * S);
@@ -53,6 +54,8 @@ export type MapSceneProps = {
   onSelect: (id: string | null) => void;
   onOpenReview: (r: Review, city: CityStat, n: number) => void;
   dark: boolean;
+  /** Off on the homepage, so the wheel and one-finger swipes still scroll the page. */
+  wheelZoom?: boolean;
 };
 
 export default function MapScene(props: MapSceneProps) {
@@ -69,13 +72,13 @@ export default function MapScene(props: MapSceneProps) {
   );
 }
 
-function Scene({ geo, lens, selected, onSelect, onOpenReview, dark }: MapSceneProps) {
+function Scene({ geo, lens, selected, onSelect, onOpenReview, dark, wheelZoom = true }: MapSceneProps) {
   const states = useMemo(buildStates, []);
   const controls = useRef<CameraControls>(null);
   const [hover, setHover] = useState<string | null>(null);
   const aspect = useThree((t) => t.size.width / Math.max(1, t.size.height));
   // Narrow screens need the camera further back so the whole country fits.
-  const far = aspect < 1.05 ? Math.min(1.9, 1.08 / aspect) : 1;
+  const far = aspect < 1.05 ? Math.min(1.9, 1.08 / aspect) : aspect > 1.6 ? 0.82 : 1;
 
   // Fly to the selected state, or back to the whole country.
   useEffect(() => {
@@ -155,6 +158,12 @@ function Scene({ geo, lens, selected, onSelect, onOpenReview, dark }: MapScenePr
         maxPolarAngle={1.25}
         dollySpeed={0.6}
         smoothTime={0.45}
+        mouseButtons={
+          wheelZoom
+            ? undefined
+            : { left: A.ROTATE, middle: A.NONE, right: A.NONE, wheel: A.NONE }
+        }
+        touches={wheelZoom ? undefined : { one: A.NONE, two: A.TOUCH_DOLLY_ROTATE, three: A.NONE }}
       />
     </>
   );

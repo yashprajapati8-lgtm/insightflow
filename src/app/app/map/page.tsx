@@ -30,6 +30,15 @@ export default function MapPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const dark = useDark();
 
+  // Deep links from the homepage: /app/map?state=gj&lens=delivery
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const s = q.get("state");
+    const l = q.get("lens");
+    if (l && LENSES.some((x) => x.id === l)) setLensId(l);
+    if (s) setSelected(s);
+  }, []);
+
   const lens = LENSES.find((l) => l.id === lensId) ?? null;
   const st = selected ? geo.states[selected] : null;
 
