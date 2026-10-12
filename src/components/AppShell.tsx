@@ -60,7 +60,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </a>
 
       {/* Desktop sidebar */}
-      <aside className="no-print sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col gap-6 bg-sidebar px-4 py-5 text-sidebar-ink lg:flex">
+      <aside className="no-print sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col gap-6 border-r border-white/[0.06] bg-sidebar px-4 py-5 text-sidebar-ink backdrop-blur-xl lg:flex">
         <div className="flex items-center justify-between px-2">
           <Link href="/" className="flex items-center gap-2.5">
             <Logo />
@@ -69,7 +69,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <ThemeToggle />
         </div>
 
-        <div className="rounded-lg bg-sidebar-2 px-3 py-2.5">
+        <div className="rounded-[14px] border border-white/10 bg-sidebar-2 px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
           <p className="text-[11px] text-sidebar-ink-2">Dataset</p>
           <p className="truncate text-[13px] font-semibold">{meta.name}</p>
           <p className="text-xs text-sidebar-ink-2">
@@ -86,14 +86,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={clsx(
-                  "relative flex h-10 items-center gap-3 rounded-md px-3 text-sm transition-colors",
-                  active ? "bg-sidebar-2 font-semibold text-sidebar-ink" : "text-sidebar-ink-2 hover:bg-sidebar-2/60 hover:text-sidebar-ink",
+                  "relative flex h-[42px] items-center gap-3 rounded-xl border px-3 text-sm transition-[background,color,border-color] duration-200",
+                  active
+                    ? "border-white/[0.14] bg-gradient-to-b from-white/[0.14] to-white/[0.07] font-semibold text-sidebar-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_6px_16px_-6px_rgba(0,0,0,0.5)]"
+                    : "border-transparent text-sidebar-ink-2 hover:bg-white/[0.05] hover:text-sidebar-ink",
                 )}
               >
                 {active && (
                   <motion.span
                     layoutId="nav-active"
-                    className="absolute top-2 bottom-2 left-0 w-[3px] rounded-full bg-attn"
+                    className="absolute top-2.5 bottom-2.5 -left-[17px] w-[3px] rounded-full bg-attn"
                     transition={{ type: "spring", stiffness: 500, damping: 40 }}
                   />
                 )}
@@ -110,7 +112,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="mt-auto flex flex-col gap-2">
           <Link
             href="/app/add"
-            className="flex h-10 items-center justify-center gap-2 rounded-md bg-attn text-sm font-semibold text-on-attn transition-opacity hover:opacity-90"
+            className="btn-attn flex h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-[filter] hover:brightness-105"
           >
             <Upload size={16} /> Add feedback
           </Link>
@@ -121,7 +123,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 resetToSample();
                 toast.show("Sample dataset restored");
               }}
-              className="flex h-9 items-center justify-center gap-2 rounded-md text-[13px] text-sidebar-ink-2 hover:bg-sidebar-2 hover:text-sidebar-ink"
+              className="flex h-9 items-center justify-center gap-2 rounded-xl text-[13px] text-sidebar-ink-2 hover:bg-sidebar-2 hover:text-sidebar-ink"
             >
               <RotateCcw size={14} /> Back to the sample
             </button>
@@ -130,13 +132,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Mobile top bar */}
-      <header className="no-print sticky top-0 z-30 flex h-14 items-center justify-between bg-sidebar px-4 text-sidebar-ink lg:hidden">
+      <header className="no-print sticky top-0 z-30 flex h-14 items-center justify-between border-b border-white/[0.06] bg-sidebar px-4 text-sidebar-ink backdrop-blur-xl lg:hidden">
         <Link href="/" className="flex items-center gap-2">
           <Logo />
           <span className="font-bold">InsightFlow</span>
         </Link>
         <div className="flex items-center gap-1">
-          <Link href="/app/add" className="inline-flex h-9 items-center gap-1.5 rounded-md bg-attn px-3 text-[13px] font-semibold text-on-attn">
+          <Link href="/app/add" className="btn-attn inline-flex h-9 items-center gap-1.5 rounded-xl px-3 text-[13px] font-bold">
             <Upload size={14} /> Add
           </Link>
           <ThemeToggle />
@@ -148,7 +150,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </main>
 
       {/* Mobile bottom nav */}
-      <nav aria-label="Main" className="no-print fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-surface lg:hidden">
+      <nav aria-label="Main" className="no-print fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-sidebar text-sidebar-ink backdrop-blur-xl lg:hidden">
         {NAV.map(({ href, label, short, icon: Icon }) => {
           const active = isActive(href);
           return (
@@ -158,7 +160,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               aria-current={active ? "page" : undefined}
               className={clsx(
                 "flex h-16 flex-col items-center justify-center gap-1 text-[11px]",
-                active ? "font-semibold text-ink" : "text-ink-2",
+                active ? "font-semibold text-sidebar-ink" : "text-sidebar-ink-2",
               )}
             >
               <Icon size={18} strokeWidth={1.8} />
@@ -177,7 +179,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
-            className="fixed right-4 bottom-20 z-50 flex max-w-sm items-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm text-on-primary shadow-pop lg:bottom-6"
+            className="fixed right-4 bottom-20 z-50 flex raised max-w-sm items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium lg:bottom-6"
           >
             {toast.tone === "ok" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
             {toast.message}
@@ -216,7 +218,7 @@ export function PageHeader({ title, children, actions }: { title: string; childr
   return (
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div className="flex max-w-[78ch] flex-col gap-1.5">
-        <h1 className="text-[28px] leading-tight font-semibold tracking-[-0.02em]">{title}</h1>
+        <h1 className="text-[30px] leading-tight font-semibold tracking-[-0.02em]">{title}</h1>
         {children && <p className="text-ink-2">{children}</p>}
       </div>
       {actions}

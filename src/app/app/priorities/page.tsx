@@ -175,7 +175,7 @@ function WeightsPanel({
     ...(hasDates ? [{ key: "momentum" as const, label: "Momentum", hint: "Growth in the latest period" }] : []),
   ];
   return (
-    <div className="flex flex-col gap-3 border-b border-line bg-surface-2 px-5 py-4">
+    <div className="well flex flex-col gap-3 border-b border-line px-5 py-4">
       <p className="text-[13px] text-ink-2">Move a slider and the ranking updates. Your business decides what matters most.</p>
       {sliders.map((s) => (
         <label key={s.key} className="grid grid-cols-[96px_minmax(0,1fr)_32px] items-center gap-3 text-[13px]">
@@ -315,7 +315,7 @@ function IssueDetail({ issue, all }: { issue: RankedIssue; all: RankedIssue[] })
         )}
       </div>
 
-      <div className="flex flex-col gap-1.5 rounded-lg bg-attn-soft p-4">
+      <div className="flex flex-col gap-1.5 rounded-2xl border border-attn/25 bg-attn-soft p-4">
         <h3 className="flex items-center gap-2 text-sm font-semibold">
           <Lightbulb size={15} aria-hidden /> Recommended action
         </h3>

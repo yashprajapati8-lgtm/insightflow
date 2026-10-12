@@ -11,11 +11,11 @@ export const metadata: Metadata = {
 };
 
 // Sets the theme before the first paint so there is no flash.
-const themeScript = `(function(){try{var t=localStorage.getItem('if-theme');if(!t){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-theme',t)}catch(e){}})();`;
+const themeScript = `(function(){try{var t=localStorage.getItem('if-theme');if(!t){t='dark'}document.documentElement.setAttribute('data-theme',t)}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-theme="dark" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

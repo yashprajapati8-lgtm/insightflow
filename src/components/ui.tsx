@@ -7,11 +7,11 @@ import type { Sentiment, Severity } from "@/lib/types";
 
 type BtnVariant = "primary" | "secondary" | "ghost";
 const btnBase =
-  "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-[background,color,border-color,transform] duration-150 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none select-none";
+  "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-[background,color,border-color,transform] duration-150 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none select-none";
 const btnSize = { sm: "h-8 px-3 text-[13px]", md: "h-10 px-4 text-sm", lg: "h-12 px-5 text-[15px]" };
 const btnVariant: Record<BtnVariant, string> = {
-  primary: "bg-primary text-on-primary hover:opacity-90 font-semibold",
-  secondary: "bg-surface text-ink border border-line hover:border-ink-3 hover:bg-surface-2",
+  primary: "raised font-semibold hover:brightness-105",
+  secondary: "bg-surface text-ink border border-line shadow-[inset_0_1px_0_var(--glass-hi)] hover:border-ink-3 hover:bg-surface-2",
   ghost: "text-ink hover:bg-surface-2",
 };
 
@@ -33,9 +33,9 @@ export function ButtonLink({
   return <Link className={clsx(btnBase, btnSize[size], btnVariant[variant], className)} {...rest} />;
 }
 
-export function Panel({ className, children, ...rest }: ComponentProps<"section">) {
+export function Panel({ className, children, lift, tone, ...rest }: ComponentProps<"section"> & { lift?: boolean; tone?: "attn" }) {
   return (
-    <section className={clsx("rounded-xl border border-line bg-surface shadow-card", className)} {...rest}>
+    <section className={clsx("glass rounded-[22px]", lift && "lift", tone === "attn" && "glass-attn", className)} {...rest}>
       {children}
     </section>
   );
@@ -87,7 +87,7 @@ export function Segmented<T extends string>({
     typeof o === "string" ? { value: o, label: o } : o,
   );
   return (
-    <div role="radiogroup" aria-label={label} className="inline-flex rounded-md border border-line bg-surface-2 p-0.5">
+    <div role="radiogroup" aria-label={label} className="well inline-flex rounded-full p-1">
       {opts.map((o) => {
         const on = o.value === value;
         return (
@@ -98,9 +98,9 @@ export function Segmented<T extends string>({
             aria-checked={on}
             onClick={() => onChange(o.value)}
             className={clsx(
-              "rounded-[5px] font-medium transition-colors",
-              size === "sm" ? "h-7 px-2.5 text-xs" : "h-9 px-3.5 text-sm",
-              on ? "bg-surface text-ink shadow-card" : "text-ink-2 hover:text-ink",
+              "rounded-full font-medium transition-[background,color,box-shadow] duration-200",
+              size === "sm" ? "h-7 px-3 text-xs" : "h-8 px-4 text-[13px]",
+              on ? "raised" : "text-ink-2 hover:text-ink",
             )}
           >
             {o.label}
@@ -121,7 +121,7 @@ const SENT_LABEL: Record<Sentiment, string> = { negative: "Negative", positive: 
 
 export function SentimentChip({ value }: { value: Sentiment }) {
   return (
-    <span className={clsx("inline-flex h-6 items-center rounded px-2 text-xs font-semibold", SENT_STYLE[value])}>
+    <span className={clsx("inline-flex h-6 items-center rounded-full px-2.5 text-xs font-semibold", SENT_STYLE[value])}>
       {SENT_LABEL[value]}
     </span>
   );
@@ -129,7 +129,7 @@ export function SentimentChip({ value }: { value: Sentiment }) {
 
 export function ActNow() {
   return (
-    <span className="inline-flex h-5 items-center rounded bg-attn px-1.5 text-[11px] font-bold text-on-attn">Act now</span>
+    <span className="glow-attn inline-flex h-5 items-center rounded-full bg-attn px-2 text-[11px] font-bold text-on-attn">Act now</span>
   );
 }
 
@@ -150,27 +150,36 @@ export function Stat({
   note,
   onOpen,
   accent,
+  meter,
+  meterClass = "bg-bar-1",
 }: {
   label: string;
   value: ReactNode;
   note?: ReactNode;
   onOpen?: () => void;
   accent?: ReactNode;
+  meter?: number;
+  meterClass?: string;
 }) {
   return (
-    <div className="flex min-w-0 flex-col gap-1 px-5 py-4">
-      <span className="text-[13px] text-ink-2">{label}</span>
-      <span className="flex items-center gap-2">
-        {onOpen ? (
-          <button type="button" onClick={onOpen} className="proof text-[28px] leading-tight font-semibold tracking-[-0.02em]">
-            {value}
-          </button>
-        ) : (
-          <span className="text-[28px] leading-tight font-semibold tracking-[-0.02em]">{value}</span>
-        )}
+    <div className="glass lift flex min-w-0 flex-col gap-1.5 rounded-[20px] px-5 py-[18px]">
+      <span className="flex items-center justify-between gap-2 text-[13px] text-ink-2">
+        {label}
         {accent}
       </span>
+      {onOpen ? (
+        <button type="button" onClick={onOpen} className="proof self-start text-[32px] leading-tight font-semibold tracking-[-0.025em]">
+          {value}
+        </button>
+      ) : (
+        <span className="text-[32px] leading-tight font-semibold tracking-[-0.025em]">{value}</span>
+      )}
       {note && <span className="text-[13px] text-ink-2">{note}</span>}
+      {meter !== undefined && (
+        <span aria-hidden className="well mt-1.5 h-1.5 overflow-hidden rounded-full">
+          <span className={clsx("block h-full rounded-full transition-[width] duration-500", meterClass)} style={{ width: `${Math.max(0, Math.min(1, meter)) * 100}%` }} />
+        </span>
+      )}
     </div>
   );
 }

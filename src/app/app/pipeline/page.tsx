@@ -242,8 +242,8 @@ export default function PipelinePage() {
                   type="button"
                   onClick={() => setPicked(i)}
                   aria-pressed={on}
-                  className={`flex flex-1 flex-col gap-1.5 rounded-lg border p-3.5 text-left transition-colors ${
-                    on ? "border-ink bg-surface-2" : "border-line hover:border-ink-3"
+                  className={`flex flex-1 flex-col gap-1.5 rounded-2xl border p-3.5 text-left transition-colors ${
+                    on ? "border-attn/60 bg-attn-soft shadow-[inset_0_1px_0_var(--glass-hi)]" : "border-line bg-well hover:border-ink-3"
                   }`}
                 >
                   <span className="flex items-center justify-between text-xs text-ink-2">
@@ -297,13 +297,13 @@ export default function PipelinePage() {
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
                   <span className="text-xs text-ink-2">Input: the review, as context</span>
-                  <blockquote className="quote rounded-lg bg-surface-2 p-3 text-[15px] leading-relaxed">“{example.text}”</blockquote>
+                  <blockquote className="quote well rounded-2xl p-3.5 text-[15px] leading-relaxed">“{example.text}”</blockquote>
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <span className="text-xs text-ink-2">
                     Output, {example.engine === "adaption" ? "from Adaption" : example.engine === "llm" ? "from the live model" : "from the rule baseline until Adaption runs"}
                   </span>
-                  <pre className="overflow-x-auto rounded-lg bg-[#0f141d] p-3 text-xs leading-relaxed whitespace-pre-wrap text-[#e6eaf1]">
+                  <pre className="overflow-x-auto rounded-2xl bg-[#0f1116]/90 p-3.5 text-xs leading-relaxed whitespace-pre-wrap text-[#e6eaf1] shadow-[inset_0_1px_3px_rgba(0,0,0,0.5)]">
                     {JSON.stringify(example.analysis, null, 2)}
                   </pre>
                 </div>
@@ -342,7 +342,7 @@ export default function PipelinePage() {
               </tbody>
             </table>
           ) : (
-            <p className="rounded-lg border border-dashed border-line px-4 py-6 text-center text-[13px] text-ink-2">
+            <p className="well rounded-2xl px-4 py-6 text-center text-[13px] text-ink-2">
               The hand-labeled check set has not been added yet, so no accuracy is claimed.
             </p>
           )}
@@ -365,7 +365,7 @@ function JobBadge({ view, configured }: { view: JobView; configured?: boolean })
     failed: ["Run failed", "bg-neg-bg text-neg-fg"],
   };
   const [label, cls] = map[view.state];
-  return <span className={`inline-flex h-8 items-center rounded-md px-3 text-[13px] font-medium ${cls}`}>{label}</span>;
+  return <span className={`inline-flex h-8 items-center rounded-xl px-3 text-[13px] font-medium ${cls}`}>{label}</span>;
 }
 
 type GoldItem = { text: string; sentiment: string; severity: string };

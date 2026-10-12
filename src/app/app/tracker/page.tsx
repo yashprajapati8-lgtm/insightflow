@@ -96,7 +96,7 @@ function Board() {
                   setOver(null);
                 }}
                 className={`flex min-h-[320px] flex-col gap-2 rounded-xl border p-2.5 transition-colors ${
-                  over === st ? "border-dashed border-ink-3 bg-surface-2" : "border-line bg-line-soft/60"
+                  over === st ? "border-dashed border-attn bg-attn-soft" : "well border-transparent"
                 }`}
               >
                 <div className="flex items-center justify-between px-1.5 pt-0.5 pb-1.5">
@@ -123,8 +123,8 @@ function Board() {
                       }}
                       onClick={() => setSel(t.issueId)}
                       aria-pressed={on}
-                      className={`flex cursor-grab flex-col gap-1.5 rounded-lg border bg-surface p-3 text-left shadow-card active:cursor-grabbing ${
-                        on ? "border-ink" : "border-line hover:border-ink-3"
+                      className={`glass lift flex cursor-grab flex-col gap-1.5 rounded-2xl p-3.5 text-left active:cursor-grabbing ${
+                        on ? "!border-attn/70" : ""
                       } ${drag === t.issueId ? "opacity-40" : ""}`}
                     >
                       <span className="flex items-center justify-between gap-2 text-xs text-ink-2">
@@ -175,8 +175,8 @@ function Board() {
                   role="radio"
                   aria-checked={current.t.status === st}
                   onClick={() => move(current.t.issueId, st)}
-                  className={`h-9 rounded-md border text-[13px] font-medium transition-colors ${
-                    current.t.status === st ? "border-primary bg-primary text-on-primary" : "border-line bg-surface hover:bg-surface-2"
+                  className={`h-9 rounded-xl border text-[13px] font-medium transition-colors ${
+                    current.t.status === st ? "raised border-transparent" : "border-line bg-surface hover:bg-surface-2"
                   }`}
                 >
                   {st}
@@ -188,7 +188,7 @@ function Board() {
             <h3 className="text-[13px] font-semibold">Notes</h3>
             {current.t.notes.length === 0 && <p className="text-[13px] text-ink-2">No notes yet. Add what the team found or decided.</p>}
             {current.t.notes.map((n, i) => (
-              <p key={i} className="rounded-md bg-surface-2 px-3 py-2 text-[13px]">
+              <p key={i} className="rounded-xl bg-surface-2 px-3 py-2 text-[13px]">
                 {n.text} <span className="text-ink-2">{time(n.at)}</span>
               </p>
             ))}
@@ -207,7 +207,7 @@ function Board() {
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   placeholder="Add a note"
-                  className="h-9 w-full rounded-md border border-line bg-surface px-3 text-[13px] outline-none focus:border-ink-3"
+                  className="h-9 w-full rounded-xl border border-line bg-surface px-3 text-[13px] outline-none focus:border-ink-3"
                 />
               </label>
               <Button type="submit" size="sm" variant="primary" className="h-9">

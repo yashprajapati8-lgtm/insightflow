@@ -29,7 +29,7 @@ export function EvidenceDrawer() {
       {open && (
         <>
           <motion.div
-            className="fixed inset-0 z-40 bg-black/30"
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -39,7 +39,7 @@ export function EvidenceDrawer() {
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            className="fixed top-0 right-0 z-50 flex h-full w-full max-w-[560px] flex-col border-l border-line bg-surface shadow-pop"
+            className="glass fixed top-0 right-0 z-50 flex h-full w-full max-w-[560px] flex-col !rounded-none !bg-[var(--bg)]/80 shadow-pop"
             initial={{ x: 40, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 40, opacity: 0 }}
@@ -58,7 +58,7 @@ export function EvidenceDrawer() {
                 type="button"
                 onClick={close}
                 aria-label="Close evidence"
-                className="inline-flex size-9 items-center justify-center rounded-md hover:bg-surface-2"
+                className="inline-flex size-9 items-center justify-center rounded-xl hover:bg-surface-2"
               >
                 <X size={18} />
               </button>

@@ -69,7 +69,7 @@ function Feedback() {
       </PageHeader>
 
       <div className="flex flex-wrap items-center gap-2">
-        <label className="flex h-10 min-w-[240px] flex-1 items-center gap-2 rounded-md border border-line bg-surface px-3 focus-within:border-ink-3">
+        <label className="flex h-10 min-w-[240px] flex-1 items-center gap-2 rounded-xl border border-line bg-surface px-3 focus-within:border-ink-3">
           <Search size={16} className="text-ink-2" aria-hidden />
           <span className="sr-only">Search feedback</span>
           <input
@@ -88,7 +88,7 @@ function Feedback() {
           aria-label="Category"
           value={cat}
           onChange={(e) => setCat(e.target.value)}
-          className="h-10 rounded-md border border-line bg-surface px-2 text-[13px]"
+          className="h-10 rounded-xl border border-line bg-surface px-2 text-[13px]"
         >
           <option value="All">All categories</option>
           {categories.map((c) => (
@@ -99,7 +99,7 @@ function Feedback() {
           aria-label="Source"
           value={src}
           onChange={(e) => setSrc(e.target.value)}
-          className="h-10 rounded-md border border-line bg-surface px-2 text-[13px]"
+          className="h-10 rounded-xl border border-line bg-surface px-2 text-[13px]"
         >
           <option value="All">All sources</option>
           <option value="sample">Sample dataset</option>
@@ -197,7 +197,7 @@ function ReviewDetail({ review }: { review: Review }) {
       </div>
 
       {review.provisional && review.source !== "sample" && (
-        <p className="rounded-md border border-dashed border-line bg-surface-2 px-3 py-2.5 text-[13px]">
+        <p className="rounded-2xl border border-dashed border-attn/40 bg-attn-soft px-3.5 py-2.5 text-[13px]">
           Provisional result. The Adaption batch run confirms or replaces it.
         </p>
       )}
@@ -234,7 +234,7 @@ function ReviewDetail({ review }: { review: Review }) {
             <select
               value={draft.sentiment}
               onChange={(e) => setDraft({ ...draft, sentiment: e.target.value as Sentiment })}
-              className="h-9 w-full rounded-md border border-line bg-surface px-2"
+              className="h-9 w-full rounded-xl border border-line bg-surface px-2"
             >
               {["negative", "mixed", "neutral", "positive"].map((s) => (
                 <option key={s} value={s}>
@@ -247,7 +247,7 @@ function ReviewDetail({ review }: { review: Review }) {
             <select
               value={draft.severity}
               onChange={(e) => setDraft({ ...draft, severity: e.target.value as Severity })}
-              className="h-9 w-full rounded-md border border-line bg-surface px-2"
+              className="h-9 w-full rounded-xl border border-line bg-surface px-2"
             >
               {(["critical", "high", "medium", "low", "none"] as Severity[]).map((s) => (
                 <option key={s} value={s}>
@@ -260,7 +260,7 @@ function ReviewDetail({ review }: { review: Review }) {
             <select
               value={draft.issueId ?? ""}
               onChange={(e) => setDraft({ ...draft, issueId: e.target.value || null })}
-              className="h-9 w-full rounded-md border border-line bg-surface px-2"
+              className="h-9 w-full rounded-xl border border-line bg-surface px-2"
             >
               <option value="">No issue (praise)</option>
               {[...ISSUES, OTHER_ISSUE].map((i) => (

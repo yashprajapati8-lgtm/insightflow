@@ -14,7 +14,7 @@ export function HeroFlow({ rows, distinct, issues }: Props) {
   const n = (x: number) => x.toLocaleString("en-US");
 
   return (
-    <figure className="relative m-0 overflow-hidden rounded-2xl border border-line bg-surface p-6 shadow-pop sm:p-8">
+    <figure className="glass relative m-0 overflow-hidden rounded-[24px] p-6 sm:p-8">
       <div aria-hidden className="pointer-events-none absolute -top-32 -right-24 size-80 rounded-full bg-attn/20 blur-3xl" />
       <svg viewBox="0 0 640 300" role="img" aria-label={`${n(rows)} reports become ${n(distinct)} distinct reviews, then ${issues.length} ranked issues`} className="relative block w-full">
         <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: t(0.6) }}>

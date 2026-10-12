@@ -18,7 +18,7 @@ export default function SharedReportPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-bg px-4 py-8">
+    <div className="min-h-screen px-4 py-8">
       <div className="no-print mx-auto mb-5 flex max-w-[820px] items-center justify-between gap-3">
         <Link href="/" className="text-sm font-bold">
           InsightFlow
@@ -27,7 +27,7 @@ export default function SharedReportPage() {
           <button
             type="button"
             onClick={() => window.print()}
-            className="inline-flex h-9 items-center gap-2 rounded-md border border-line bg-surface px-3 text-[13px] font-medium"
+            className="glass inline-flex h-9 items-center gap-2 rounded-xl px-3 text-[13px] font-medium"
           >
             <Printer size={15} /> Save as PDF
           </button>

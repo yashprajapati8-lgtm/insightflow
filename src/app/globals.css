@@ -1,78 +1,104 @@
 @import "tailwindcss";
 
 /* Theme tokens. Light is the default; dark is set on <html data-theme="dark">. */
+/* Light theme: frosted white glass on soft grey. */
 :root {
-  --bg: #f3f5f9;
-  --surface: #ffffff;
-  --surface-2: #f7f9fc;
-  --line: #dde2ea;
-  --line-soft: #edf0f5;
-  --ink: #151b27;
-  --ink-2: #566072;
+  --bg: #e6e8ec;
+  --surface: rgba(255, 255, 255, 0.62);
+  --surface-2: rgba(255, 255, 255, 0.5);
+  --line: rgba(20, 24, 32, 0.1);
+  --line-soft: rgba(20, 24, 32, 0.06);
+  --ink: #151a24;
+  --ink-2: #525c6d;
   --ink-3: #8a93a3;
-  --primary: #151b27;
+  --primary: #151a24;
   --on-primary: #ffffff;
   --attn: #f2b544;
-  --on-attn: #3a2a00;
+  --on-attn: #2e2100;
   --attn-text: #8a5a00;
-  --attn-soft: #fdf3dc;
-  --neg: #b9472f;
-  --neg-bg: #f9e6e1;
-  --neg-fg: #8e2f1b;
+  --attn-soft: rgba(242, 181, 68, 0.16);
+  --neg: #c24f36;
+  --neg-bg: rgba(194, 79, 54, 0.12);
+  --neg-fg: #9a3620;
   --pos: #23735f;
-  --pos-bg: #ddf0ea;
+  --pos-bg: rgba(35, 115, 95, 0.12);
   --pos-fg: #1a5a4a;
   --mix: #6a68ae;
-  --mix-bg: #e8e7f5;
+  --mix-bg: rgba(106, 104, 174, 0.14);
   --mix-fg: #45437f;
-  --neu: #b8bccb;
-  --bar-1: #151b27;
+  --neu: rgba(20, 24, 32, 0.18);
+  --bar-1: #151a24;
   --bar-2: #5a7090;
   --bar-3: #aebbcd;
-  --sidebar: #0f141d;
-  --sidebar-2: #1b2230;
-  --sidebar-ink: #e6eaf1;
-  --sidebar-ink-2: #8e98aa;
-  --shadow: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.06);
-  --shadow-lg: 0 12px 32px -8px rgb(16 24 40 / 0.18), 0 2px 6px rgb(16 24 40 / 0.06);
-  --focus: #151b27;
+  --sidebar: rgba(14, 16, 20, 0.86);
+  --sidebar-2: rgba(255, 255, 255, 0.08);
+  --sidebar-ink: #eef0f3;
+  --sidebar-ink-2: rgba(238, 240, 243, 0.6);
+  --well: rgba(20, 24, 32, 0.04);
+  --well-shadow: inset 0 1px 2px rgba(20, 24, 32, 0.08), inset 0 0 0 1px rgba(20, 24, 32, 0.04);
+  --glass-top: rgba(255, 255, 255, 0.78);
+  --glass-bottom: rgba(255, 255, 255, 0.56);
+  --glass-edge: rgba(255, 255, 255, 0.7);
+  --glass-hi: rgba(255, 255, 255, 0.95);
+  --glow-a: rgba(242, 181, 68, 0.22);
+  --glow-b: rgba(110, 140, 195, 0.2);
+  --grain: 0.05;
+  --shadow: 0 1px 2px rgba(20, 24, 32, 0.06), 0 8px 24px -10px rgba(20, 24, 32, 0.18), 0 24px 48px -24px rgba(20, 24, 32, 0.16);
+  --shadow-lift: 0 1px 2px rgba(20, 24, 32, 0.08), 0 14px 32px -10px rgba(20, 24, 32, 0.24), 0 32px 64px -28px rgba(20, 24, 32, 0.2);
+  --shadow-lg: 0 24px 60px -12px rgba(20, 24, 32, 0.35), 0 2px 8px rgba(20, 24, 32, 0.1);
+  --raised: linear-gradient(180deg, #232a37, #121620);
+  --raised-hi: rgba(255, 255, 255, 0.14);
+  --focus: #151a24;
   color-scheme: light;
 }
 
+/* Dark theme (default): frosted matte glass on graphite. */
 [data-theme="dark"] {
-  --bg: #0b0f16;
-  --surface: #121823;
-  --surface-2: #171e2b;
-  --line: #263044;
-  --line-soft: #1c2433;
-  --ink: #e8ecf3;
-  --ink-2: #9ba5b6;
-  --ink-3: #6b7589;
-  --primary: #e8ecf3;
-  --on-primary: #0b0f16;
+  --bg: #202226;
+  --surface: rgba(255, 255, 255, 0.07);
+  --surface-2: rgba(255, 255, 255, 0.05);
+  --line: rgba(255, 255, 255, 0.11);
+  --line-soft: rgba(255, 255, 255, 0.06);
+  --ink: #f2f3f5;
+  --ink-2: rgba(242, 243, 245, 0.64);
+  --ink-3: rgba(242, 243, 245, 0.4);
+  --primary: #f4f5f7;
+  --on-primary: #1b1d21;
   --attn: #f2b544;
   --on-attn: #2a1e00;
   --attn-text: #f4c56a;
-  --attn-soft: #2e2410;
-  --neg: #e2775e;
-  --neg-bg: #3a1c16;
-  --neg-fg: #f5ab9a;
-  --pos: #4fb596;
-  --pos-bg: #0f3229;
-  --pos-fg: #91dac2;
-  --mix: #9e9ce3;
-  --mix-bg: #25244a;
-  --mix-fg: #c5c3f4;
-  --neu: #4a5568;
-  --bar-1: #e8ecf3;
-  --bar-2: #7f96b8;
-  --bar-3: #43516a;
-  --sidebar: #070a10;
-  --sidebar-2: #141a26;
-  --sidebar-ink: #e6eaf1;
-  --sidebar-ink-2: #7f899b;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
-  --shadow-lg: 0 16px 40px -8px rgb(0 0 0 / 0.6), 0 2px 8px rgb(0 0 0 / 0.4);
+  --attn-soft: rgba(242, 181, 68, 0.12);
+  --neg: #f08a6e;
+  --neg-bg: rgba(240, 138, 110, 0.16);
+  --neg-fg: #f5a189;
+  --pos: #5cc8a5;
+  --pos-bg: rgba(92, 200, 165, 0.15);
+  --pos-fg: #7fd9bb;
+  --mix: #a9a7e6;
+  --mix-bg: rgba(169, 167, 230, 0.16);
+  --mix-fg: #c9c7f5;
+  --neu: rgba(255, 255, 255, 0.22);
+  --bar-1: rgba(242, 243, 245, 0.88);
+  --bar-2: #8fa6c8;
+  --bar-3: rgba(255, 255, 255, 0.3);
+  --sidebar: rgba(12, 13, 16, 0.55);
+  --sidebar-2: rgba(255, 255, 255, 0.07);
+  --sidebar-ink: #f2f3f5;
+  --sidebar-ink-2: rgba(242, 243, 245, 0.6);
+  --well: rgba(0, 0, 0, 0.18);
+  --well-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --glass-top: rgba(255, 255, 255, 0.105);
+  --glass-bottom: rgba(255, 255, 255, 0.045);
+  --glass-edge: rgba(255, 255, 255, 0.11);
+  --glass-hi: rgba(255, 255, 255, 0.16);
+  --glow-a: rgba(242, 181, 68, 0.2);
+  --glow-b: rgba(120, 150, 200, 0.18);
+  --grain: 0.07;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -8px rgba(0, 0, 0, 0.45), 0 24px 48px -20px rgba(0, 0, 0, 0.35);
+  --shadow-lift: 0 1px 2px rgba(0, 0, 0, 0.3), 0 14px 32px -8px rgba(0, 0, 0, 0.55), 0 32px 64px -24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 24px 60px -12px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --raised: linear-gradient(180deg, #ffffff, #e6e7ea);
+  --raised-hi: #ffffff;
   --focus: #f2b544;
   color-scheme: dark;
 }
@@ -109,6 +135,7 @@
   --color-sidebar-2: var(--sidebar-2);
   --color-sidebar-ink: var(--sidebar-ink);
   --color-sidebar-ink-2: var(--sidebar-ink-2);
+  --color-well: var(--well);
   --font-sans: "Hanken Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Source Serif 4 Variable", Georgia, serif;
   --shadow-card: var(--shadow);
@@ -119,8 +146,32 @@ html {
   background: var(--bg);
 }
 
+/* Ambient light behind the glass, plus a fine matte grain. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(760px circle at 92% -8%, var(--glow-a), transparent 60%),
+    radial-gradient(900px circle at 12% 108%, var(--glow-b), transparent 60%),
+    var(--bg);
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--grain);
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
 body {
-  background: var(--bg);
+  position: relative;
+  background: transparent;
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: 14px;
@@ -151,6 +202,55 @@ body {
   font-family: var(--font-serif);
 }
 
+/* Frosted matte glass: tint, blur, cut edge with a top highlight, stacked shadow. */
+.glass {
+  background: linear-gradient(180deg, var(--glass-top), var(--glass-bottom));
+  border: 1px solid var(--glass-edge);
+  box-shadow: inset 0 1px 0 var(--glass-hi), var(--shadow);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
+}
+.glass-attn {
+  background: linear-gradient(135deg, rgba(242, 181, 68, 0.18), var(--glass-bottom) 60%);
+  border-color: rgba(242, 181, 68, 0.3);
+}
+.lift {
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.lift:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 1px 0 var(--glass-hi), var(--shadow-lift);
+}
+/* Recessed area inside a card, for charts and lists. */
+.well {
+  background: var(--well);
+  box-shadow: var(--well-shadow);
+}
+/* Raised control: the active toggle and the primary button. */
+.raised {
+  background: var(--raised);
+  color: var(--on-primary);
+  box-shadow: inset 0 1px 0 var(--raised-hi), 0 6px 16px -6px rgba(0, 0, 0, 0.55);
+}
+.btn-attn {
+  background: linear-gradient(180deg, #f6c463, #eba830);
+  color: #2a1e00;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 8px 20px -6px rgba(242, 181, 68, 0.55);
+}
+.glow-attn {
+  box-shadow: 0 0 16px rgba(242, 181, 68, 0.5);
+}
+select option {
+  background: var(--bg);
+  color: var(--ink);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass { background: var(--bg); }
+}
+@media (max-width: 640px) {
+  .glass { -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+}
+
 @keyframes shimmer {
   0% { background-position: -400px 0; }
   100% { background-position: 400px 0; }
@@ -171,6 +271,7 @@ body {
 
 @media print {
   .no-print { display: none !important; }
-  body, html { background: #fff !important; }
+  body, html { background: #fff !important; color: #151a24 !important; }
+  body::before, body::after { display: none !important; }
   .print-page { border: 0 !important; box-shadow: none !important; padding: 0 !important; max-width: none !important; }
 }

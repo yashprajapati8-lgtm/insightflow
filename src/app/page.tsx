@@ -17,7 +17,7 @@ const n = (x: number) => Math.round(x).toLocaleString("en-US");
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-bg text-ink">
+    <div className="min-h-screen text-ink">
       <header className="mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-5 py-5 sm:px-8">
         <Link href="/" className="flex items-center gap-2.5">
           <Logo size={28} />
@@ -31,7 +31,7 @@ export default function Landing() {
             Where Adaption fits
           </Link>
           <ThemeToggle tone="page" />
-          <Link href="/app" className="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-on-primary hover:opacity-90">
+          <Link href="/app" className="inline-flex h-10 items-center gap-2 raised rounded-xl px-4 text-sm font-semibold hover:brightness-105">
             Open the app
           </Link>
         </nav>
@@ -40,7 +40,7 @@ export default function Landing() {
       <main>
         <section className="mx-auto grid max-w-[1200px] items-center gap-12 px-5 pt-10 pb-20 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:pt-16">
           <div className="flex flex-col gap-6">
-            <p className="inline-flex w-fit items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-[13px] text-ink-2">
+            <p className="glass inline-flex w-fit items-center gap-2 rounded-full px-3.5 py-1.5 text-[13px] text-ink-2">
               <span className="size-1.5 rounded-full bg-attn" /> Fix what matters first
             </p>
             <h1 className="max-w-[15ch] text-[44px] leading-[1.05] font-bold tracking-[-0.03em] sm:text-[56px]">
@@ -51,10 +51,10 @@ export default function Landing() {
               number opens the reviews behind it.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/app" className="inline-flex h-12 items-center gap-2 rounded-md bg-primary px-5 font-semibold text-on-primary hover:opacity-90">
+              <Link href="/app" className="inline-flex h-12 items-center gap-2 raised rounded-xl px-5 font-semibold hover:brightness-105">
                 Open the sample workspace <ArrowRight size={17} />
               </Link>
-              <Link href="/app/add" className="inline-flex h-12 items-center gap-2 rounded-md border border-line bg-surface px-5 font-medium hover:border-ink-3">
+              <Link href="/app/add" className="glass lift inline-flex h-12 items-center gap-2 rounded-xl px-5 font-medium">
                 <FileUp size={17} /> Import your own CSV
               </Link>
             </div>
@@ -67,7 +67,7 @@ export default function Landing() {
           />
         </section>
 
-        <section id="how" aria-labelledby="how-h" className="border-y border-line bg-surface">
+        <section id="how" aria-labelledby="how-h">
           <div className="mx-auto flex max-w-[1200px] flex-col gap-10 px-5 py-20 sm:px-8">
             <div className="flex max-w-[60ch] flex-col gap-3">
               <h2 id="how-h" className="text-[32px] leading-tight font-semibold tracking-[-0.02em]">
@@ -93,9 +93,9 @@ export default function Landing() {
                   body: "Issues are ranked by a formula you can adjust. Track the ones you act on and share a brief written for leadership.",
                 },
               ].map((s, i) => (
-                <li key={s.title} className="flex flex-col gap-3 rounded-xl border border-line bg-bg p-6">
+                <li key={s.title} className="glass lift flex flex-col gap-3 rounded-[22px] p-6">
                   <span className="flex items-center justify-between">
-                    <span className="inline-flex size-10 items-center justify-center rounded-lg bg-primary text-on-primary">
+                    <span className="raised inline-flex size-10 items-center justify-center rounded-xl">
                       <s.icon size={19} />
                     </span>
                     <span className="text-sm font-semibold text-ink-3">Step {i + 1}</span>
@@ -121,7 +121,7 @@ export default function Landing() {
               See the ranking and its evidence <ArrowRight size={16} />
             </Link>
           </div>
-          <figure className="m-0 flex flex-col gap-4 rounded-2xl border border-line bg-surface p-7 shadow-card">
+          <figure className="glass lift m-0 flex flex-col gap-4 rounded-[22px] p-7">
             <Quote size={22} className="text-attn" aria-hidden />
             <blockquote className="quote text-[22px] leading-relaxed">“{topQuote.text}”</blockquote>
             <figcaption className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-2">
@@ -133,7 +133,7 @@ export default function Landing() {
         </section>
 
         <section className="mx-auto max-w-[1200px] px-5 pb-20 sm:px-8">
-          <div className="grid gap-4 rounded-2xl bg-sidebar p-8 text-sidebar-ink sm:p-10 md:grid-cols-3">
+          <div className="grid gap-6 rounded-[24px] border border-white/[0.08] bg-sidebar p-8 text-sidebar-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.08),var(--shadow)] backdrop-blur-xl sm:p-10 md:grid-cols-3">
             {[
               { icon: ShieldCheck, title: "Nothing invented", body: "No dates in the data means no trend chart. Every claim links to real reviews." },
               { icon: Workflow, title: "Adaption does the analysis", body: "Distinct reviews run through Adaption's Adaptive Data API as one batch job." },

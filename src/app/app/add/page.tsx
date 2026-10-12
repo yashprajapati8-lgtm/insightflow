@@ -164,7 +164,7 @@ function CsvImport() {
             >
               <span
                 className={`inline-flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-                  done ? "bg-pos text-white" : cur ? "bg-primary text-on-primary" : "bg-line-soft text-ink-2"
+                  done ? "bg-pos text-white" : cur ? "raised" : "bg-line-soft text-ink-2"
                 }`}
               >
                 {done ? <Check size={13} /> : i + 1}
@@ -189,7 +189,7 @@ function CsvImport() {
               onFile(e.dataTransfer.files[0]);
             }}
             className={`flex w-full max-w-[640px] cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed px-6 py-12 text-center transition-colors ${
-              drag ? "border-primary bg-surface-2" : "border-line hover:border-ink-3"
+              drag ? "border-attn bg-attn-soft" : "border-line bg-well hover:border-ink-3"
             }`}
           >
             <UploadCloud size={32} strokeWidth={1.5} aria-hidden />
@@ -229,7 +229,7 @@ function CsvImport() {
               {fmt(csv.rows.length)} rows, {csv.headers.length} columns. Check what each column is used for.
             </span>
           </p>
-          <div className="overflow-x-auto rounded-lg border border-line">
+          <div className="overflow-x-auto rounded-2xl border border-line">
             <table className="w-full min-w-[560px] border-collapse text-[13px]">
               <thead>
                 <tr className="bg-surface-2">
@@ -247,7 +247,7 @@ function CsvImport() {
                             roles[h] = role;
                             setCsv({ ...csv, roles });
                           }}
-                          className="h-8 rounded-md border border-line bg-surface px-1.5 text-ink"
+                          className="h-8 rounded-xl border border-line bg-surface px-1.5 text-ink"
                         >
                           <option value="text">Feedback text</option>
                           <option value="category">Category</option>
@@ -275,7 +275,7 @@ function CsvImport() {
           </div>
 
           {preview ? (
-            <ul className="flex flex-col gap-1.5 rounded-lg bg-surface-2 px-4 py-3 text-[13px]">
+            <ul className="well flex flex-col gap-1.5 rounded-2xl px-4 py-3 text-[13px]">
               <li>
                 <strong className="font-semibold">{fmt(preview.used - preview.reviews.length)} rows repeat earlier ones.</strong>{" "}
                 They are grouped and counted, not deleted, so {fmt(preview.reviews.length)} distinct reviews get analyzed.
@@ -354,8 +354,8 @@ function Progress({ label, done, total, hint }: { label: string; done: number; t
           {fmt(done)} of {fmt(total)}
         </span>
       </div>
-      <div className="h-2 overflow-hidden rounded bg-line-soft" role="progressbar" aria-valuenow={Math.round(share * 100)} aria-valuemin={0} aria-valuemax={100} aria-label={label}>
-        <motion.div className="h-full bg-primary" animate={{ width: `${share * 100}%` }} transition={{ duration: 0.4 }} />
+      <div className="well h-2 overflow-hidden rounded-full" role="progressbar" aria-valuenow={Math.round(share * 100)} aria-valuemin={0} aria-valuemax={100} aria-label={label}>
+        <motion.div className="h-full rounded-full bg-attn" animate={{ width: `${share * 100}%` }} transition={{ duration: 0.4 }} />
       </div>
       <span className="text-xs text-ink-2">{hint}</span>
     </div>
@@ -448,7 +448,7 @@ function AddOne() {
               aria-invalid={error}
               aria-describedby={error ? "fb-err" : undefined}
               placeholder="Paste what the customer wrote"
-              className={`quote resize-y rounded-md border bg-surface px-3 py-2.5 text-base leading-relaxed outline-none focus:border-ink-3 ${
+              className={`quote resize-y rounded-xl border bg-surface px-3 py-2.5 text-base leading-relaxed outline-none focus:border-ink-3 ${
                 error ? "border-neg" : "border-line"
               }`}
             />
@@ -461,7 +461,7 @@ function AddOne() {
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="flex flex-col gap-1.5">
               <span className="font-semibold">Source</span>
-              <select value={channel} onChange={(e) => setChannel(e.target.value)} className="h-10 rounded-md border border-line bg-surface px-2">
+              <select value={channel} onChange={(e) => setChannel(e.target.value)} className="h-10 rounded-xl border border-line bg-surface px-2">
                 <option>Review</option>
                 <option>Survey response</option>
                 <option>Support message</option>
@@ -469,7 +469,7 @@ function AddOne() {
             </label>
             <label className="flex flex-col gap-1.5">
               <span className="font-semibold">Category</span>
-              <select value={category} onChange={(e) => setCategory(e.target.value)} className="h-10 rounded-md border border-line bg-surface px-2">
+              <select value={category} onChange={(e) => setCategory(e.target.value)} className="h-10 rounded-xl border border-line bg-surface px-2">
                 <option value="">Leave blank</option>
                 {categories.map((c) => (
                   <option key={c}>{c}</option>
@@ -511,7 +511,7 @@ function AddOne() {
         )}
         {result && (
           <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-4">
-            <span className="self-start rounded border border-dashed border-line bg-surface-2 px-2 py-0.5 text-xs font-semibold">
+            <span className="self-start rounded-full border border-dashed border-line bg-surface-2 px-2.5 py-0.5 text-xs font-semibold">
               Provisional, {result.engine === "llm" ? "live model" : "rule baseline"}
             </span>
             <blockquote className="quote text-base leading-relaxed">“{result.text}”</blockquote>
@@ -527,7 +527,7 @@ function AddOne() {
               <dt className="text-ink-2">Aspects</dt>
               <dd className="flex flex-wrap gap-1.5">
                 {result.analysis.aspects.map((a) => (
-                  <span key={a.topic} className="rounded bg-surface-2 px-1.5 py-0.5">
+                  <span key={a.topic} className="rounded-full bg-surface-2 px-2 py-0.5">
                     {a.topic}: {a.sentiment}
                   </span>
                 ))}

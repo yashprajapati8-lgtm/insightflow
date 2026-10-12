@@ -61,7 +61,9 @@ export default function OverviewPage() {
       { label: "In critical or high severity issues", list: highSev },
       { label: "In issues that need action now", list: actNow, act: true },
     ].map((f) => ({ ...f, value: w(f.list) }));
-    return { ranked, rankAll, totals, rows, neg, funnel, actCount: rankAll.filter((i) => i.score >= ACT_NOW).length };
+    const present = new Set(ranked.map((r) => r.id));
+    const actCount = rankAll.filter((i) => i.score >= ACT_NOW && present.has(i.id)).length;
+    return { ranked, rankAll, totals, rows, neg, funnel, actCount };
   }, [reviews, all, weights, mode]);
 
   const top = d.rankAll.filter((i) => i.score >= ACT_NOW);
@@ -73,7 +75,7 @@ export default function OverviewPage() {
   const filtered = cat !== "All" || sent !== "All";
 
   return (
-    <div className="flex flex-col gap-5 px-5 py-7 lg:px-8">
+    <div className="flex flex-col gap-[22px] px-5 py-7 lg:px-9 lg:py-8">
       <PageHeader
         title="Overview"
         actions={
@@ -84,7 +86,7 @@ export default function OverviewPage() {
               <select
                 value={cat}
                 onChange={(e) => setCat(e.target.value)}
-                className="h-9 rounded-md border border-line bg-surface px-2 text-[13px] text-ink"
+                className="glass h-10 rounded-full px-3.5 text-[13px] text-ink"
               >
                 <option value="All">All categories</option>
                 {categories.map((c) => (
@@ -108,14 +110,13 @@ export default function OverviewPage() {
 
       {/* The finding: written from computed numbers, not by a model. */}
       {top.length > 0 && !filtered ? (
-        <Panel className="relative overflow-hidden p-6">
-          <div aria-hidden className="pointer-events-none absolute -top-24 -right-24 size-64 rounded-full bg-attn/15 blur-3xl" />
+        <Panel tone="attn" lift className="relative overflow-hidden p-7">
           <div className="relative flex flex-wrap items-center justify-between gap-5">
             <div className="flex max-w-[76ch] flex-col gap-2">
               <span className="flex items-center gap-2 text-[13px] text-ink-2">
                 <ActNow /> {top.length} {top.length === 1 ? "issue needs" : "issues need"} action now
               </span>
-              <p className="text-[21px] leading-snug font-semibold tracking-[-0.015em]">
+              <p className="text-[22px] leading-snug font-semibold tracking-[-0.015em]">
                 {top
                   .map((i) => `${fmt(i.rows)} customers reported “${i.name.toLowerCase()}”`)
                   .join(", and ")}
@@ -135,23 +136,28 @@ export default function OverviewPage() {
         </Panel>
       ) : null}
 
-      <Panel aria-label="Key metrics" className="grid grid-cols-2 divide-line md:grid-cols-4 md:divide-x [&>*:nth-child(n+3)]:border-t [&>*:nth-child(n+3)]:border-line md:[&>*:nth-child(n+3)]:border-t-0">
+      <section aria-label="Key metrics" className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-[18px]">
         <Stat
           label="Feedback"
           value={fmt(mode === "rows" ? d.rows : reviews.length)}
           note={mode === "rows" ? `${fmt(reviews.length)} distinct reviews` : `distinct, in ${fmt(d.rows)} rows`}
           onOpen={() => show("All feedback", "", reviews)}
+          meter={1}
         />
         <Stat
           label="Negative"
           value={pct(d.totals.negative / (d.totals.all || 1))}
           note={`${fmt(d.totals.negative)} ${unit}`}
           onOpen={() => show("Negative feedback", "", d.neg)}
+          meter={d.totals.negative / (d.totals.all || 1)}
+          meterClass="bg-neg"
         />
         <Stat
           label="Issues found"
           value={fmt(d.ranked.length)}
           note={`across ${fmt(cats.length)} categories`}
+          meter={d.ranked.length ? 1 : 0}
+          meterClass="bg-bar-2"
         />
         <Stat
           label="Need action now"
@@ -159,10 +165,12 @@ export default function OverviewPage() {
           accent={d.actCount > 0 ? <ActNow /> : undefined}
           note={`score ${ACT_NOW} or higher`}
           onOpen={() => show("Issues that need action now", "", top.flatMap((i) => i.reviews))}
+          meter={d.actCount / (d.ranked.length || 1)}
+          meterClass="bg-attn"
         />
-      </Panel>
+      </section>
 
-      <div className="grid gap-5 xl:grid-cols-2">
+      <div className="grid gap-[18px] xl:grid-cols-2">
         <Panel className="flex flex-col gap-5 p-6" aria-labelledby="funnel-h">
           <PanelHeader
             id="funnel-h"
@@ -172,13 +180,13 @@ export default function OverviewPage() {
             actions={<Segmented label="View funnel as" options={["Bars", "Table"] as const} value={funnelView} onChange={setFunnelView} />}
           />
           {funnelView === "Bars" ? (
-            <ol className="flex flex-col gap-3.5">
+            <ol className="well flex flex-col gap-3.5 rounded-2xl p-4">
               {d.funnel.map((f, i) => (
                 <li key={f.label} className="flex flex-col gap-1">
                   <span className="text-[13px] text-ink-2">{f.label}</span>
                   <div className="flex items-center gap-3">
-                    <div className="h-3.5 flex-1">
-                      <Bar value={f.value / funnelMax} delay={i * 0.06} className={f.act ? "bg-attn" : "bg-bar-1"} />
+                    <div className="h-2.5 flex-1 rounded-full bg-line-soft">
+                      <Bar value={f.value / funnelMax} delay={i * 0.06} className={f.act ? "glow-attn rounded-full bg-attn" : "rounded-full bg-bar-1"} />
                     </div>
                     <button type="button" onClick={() => show(f.label, "", f.list)} className="proof w-16 text-right font-semibold">
                       {fmt(f.value)}
@@ -211,7 +219,7 @@ export default function OverviewPage() {
           />
           <SentimentSummary totals={d.totals} />
           {sentView === "Diverging" && (
-            <div className="flex flex-col gap-3 border-t border-line-soft pt-4">
+            <div className="well flex flex-col gap-1 rounded-2xl p-2.5">
               {cats.map((c) => {
                 const n = c.negative / (c.all || 1);
                 const p = c.positive / (c.all || 1);
@@ -221,21 +229,21 @@ export default function OverviewPage() {
                     key={c.name}
                     type="button"
                     onClick={() => show(c.name, "", c.list)}
-                    className="grid grid-cols-[minmax(0,140px)_1fr_2px_1fr] items-center gap-x-2 rounded text-left hover:bg-surface-2"
+                    className="grid grid-cols-[minmax(0,140px)_1fr_2px_1fr] items-center gap-x-2 rounded-xl px-2 py-2 text-left transition-colors hover:bg-surface-2"
                   >
                     <span className="truncate text-[13px]">{c.name}</span>
                     <span className="flex items-center justify-end gap-2">
                       <span className="w-9 text-right text-xs text-ink-2">{pct(n)}</span>
                       <span className="flex h-3.5 flex-1 flex-row-reverse">
                         <span className="h-full bg-neu" style={{ width: `${(m / 2) * 100}%` }} />
-                        <span className="h-full rounded-l-[3px] bg-neg transition-[width] duration-500" style={{ width: `${n * 100}%` }} />
+                        <span className="h-full rounded-l-full bg-neg transition-[width] duration-500" style={{ width: `${n * 100}%` }} />
                       </span>
                     </span>
-                    <span aria-hidden className="h-6 bg-ink" />
+                    <span aria-hidden className="h-6 bg-ink-3" />
                     <span className="flex items-center gap-2">
                       <span className="flex h-3.5 flex-1">
                         <span className="h-full bg-neu" style={{ width: `${(m / 2) * 100}%` }} />
-                        <span className="h-full rounded-r-[3px] bg-pos transition-[width] duration-500" style={{ width: `${p * 100}%` }} />
+                        <span className="h-full rounded-r-full bg-pos transition-[width] duration-500" style={{ width: `${p * 100}%` }} />
                       </span>
                       <span className="w-9 text-xs text-ink-2">{pct(p)}</span>
                     </span>
@@ -245,7 +253,7 @@ export default function OverviewPage() {
             </div>
           )}
           {sentView === "Pie" && (
-            <div className="grid grid-cols-3 gap-4 border-t border-line-soft pt-4 sm:grid-cols-5">
+            <div className="well grid grid-cols-3 gap-4 rounded-2xl p-4 sm:grid-cols-5">
               {[{ name: "All feedback", ...d.totals, list: reviews }, ...cats].map((c, i) => (
                 <button key={c.name} type="button" onClick={() => show(c.name, "", c.list)} className="flex flex-col items-center gap-2">
                   <Donut
@@ -284,21 +292,25 @@ export default function OverviewPage() {
             actions={<Segmented label="View issues as" options={["Bars", "Table"] as const} value={issueView} onChange={setIssueView} />}
           />
           {issueView === "Bars" ? (
-            <ol className="flex flex-col">
+            <ol className="well flex flex-col rounded-2xl p-1.5">
               {mostIssues.map((i, idx) => {
                 const rank = d.rankAll.findIndex((x) => x.id === i.id) + 1;
                 return (
-                  <li key={i.id} className="grid grid-cols-[minmax(0,1fr)_minmax(60px,120px)_52px_88px] items-center gap-3 border-b border-line-soft py-2.5 last:border-0">
-                    <button type="button" onClick={() => show(i.name, "", i.reviews)} className="truncate text-left font-medium hover:underline">
+                  <li key={i.id} className="grid grid-cols-[minmax(0,1fr)_minmax(40px,90px)_44px_92px] items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-surface-2">
+                    <button type="button" onClick={() => show(i.name, "", i.reviews)} className="text-left leading-snug font-medium hover:underline">
                       {i.name}
                     </button>
-                    <span className="h-2 overflow-hidden rounded bg-line-soft">
-                      <Bar value={i.rows / (mostIssues[0]?.rows || 1)} delay={idx * 0.05} className="bg-bar-2" />
+                    <span className="h-2 overflow-hidden rounded-full bg-line-soft">
+                      <Bar value={i.rows / (mostIssues[0]?.rows || 1)} delay={idx * 0.05} className="rounded-full bg-bar-2" />
                     </span>
                     <span className="text-right font-semibold">{fmt(mode === "rows" ? i.rows : i.distinct)}</span>
                     <Link
                       href={`/app/priorities?issue=${i.id}`}
-                      className={rank <= d.actCount ? "text-[13px] font-semibold text-attn-text" : "text-[13px] text-ink-2"}
+                      className={
+                        rank <= top.length
+                          ? "glow-attn justify-self-end rounded-full bg-attn px-2.5 py-0.5 text-xs font-semibold text-on-attn"
+                          : "justify-self-end rounded-full border border-line bg-surface-2 px-2.5 py-0.5 text-xs font-medium text-ink-2"
+                      }
                     >
                       Priority {rank}
                     </Link>
@@ -324,7 +336,7 @@ export default function OverviewPage() {
           {meta.hasDates ? (
             <TrendChart reviews={reviews} />
           ) : (
-            <div className="flex flex-1 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-line px-6 py-10 text-center">
+            <div className="well flex flex-1 flex-col items-center justify-center gap-3 rounded-2xl px-6 py-10 text-center">
               <p className="font-semibold">This dataset has no dates, so no trend is shown</p>
               <p className="max-w-[46ch] text-[13px] text-ink-2">
                 InsightFlow does not invent a timeline. Import a CSV with a date column and this chart shows how each issue
@@ -355,7 +367,7 @@ function SentimentSummary({ totals }: { totals: Record<Sentiment, number> & { al
   const order: Sentiment[] = ["negative", "mixed", "neutral", "positive"];
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex h-3 overflow-hidden rounded" aria-hidden>
+      <div className="flex h-3 overflow-hidden rounded-full" aria-hidden>
         {order.map((s) => (
           <span key={s} style={{ width: `${(totals[s] / a) * 100}%`, background: SENT_COLOR[s] }} />
         ))}

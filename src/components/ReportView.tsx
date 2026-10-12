@@ -7,7 +7,7 @@ export function ReportView({ r }: { r: ReportSnapshot }) {
   const date = new Date(r.preparedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   const s = r.sections;
   return (
-    <article className="print-page mx-auto flex w-full max-w-[820px] flex-col gap-8 rounded-xl border border-line bg-surface px-6 py-10 shadow-card sm:px-12">
+    <article className="print-page glass mx-auto flex w-full max-w-[820px] flex-col gap-8 rounded-[22px] px-6 py-10 sm:px-12">
       <header className="flex flex-col gap-2 border-b border-line pb-6">
         <span className="text-[13px] text-ink-2">
           InsightFlow brief for {r.audience === "Leadership" ? "leadership" : "the team"}, prepared {date}
