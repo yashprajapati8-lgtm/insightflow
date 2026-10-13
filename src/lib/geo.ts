@@ -86,7 +86,7 @@ export type StateStat = {
   cities: CityStat[];
 };
 export type Spread = { lens: Lens; reports: number; top: StateStat | null; topIndex: number; regional: boolean; hotspots: StateStat[] };
-export type GeoModel = { simulated: boolean; states: Record<string, StateStat>; spread: Spread[]; national: Record<string, number>; total: number; located: number };
+export type GeoModel = { simulated: boolean; maxIndex: Record<string, number>; states: Record<string, StateStat>; spread: Spread[]; national: Record<string, number>; total: number; located: number };
 
 const PRIOR = 60; // reports of "national average" blended into every state, so tiny states cannot top the chart by chance.
 export const REGIONAL_AT = 1.5;
@@ -171,7 +171,8 @@ export function buildGeo(reviews: Review[]): GeoModel {
     return { lens: l, reports: national[l.id], top, topIndex, regional: hot.length > 0, hotspots: hot };
   }).filter((s) => s.reports > 0);
 
-  return { simulated: !real, states, spread, national, total, located };
+  const maxIndex = Object.fromEntries(LENSES.map((l) => [l.id, Math.max(1, ...Object.values(states).map((st) => st.index[l.id] ?? 1))]));
+  return { simulated: !real, maxIndex, states, spread, national, total, located };
 }
 
 /** Blends white toward a color. t in 0..1. */

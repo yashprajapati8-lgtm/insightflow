@@ -85,4 +85,6 @@ export interface DatasetMeta {
   hasDates: boolean;
   hasCategory: boolean;
   importedAt: string;
+  /** The uploaded file this dataset came from (kept in the browser's IndexedDB). Absent for the demo sample. */
+  fileId?: string;
 }

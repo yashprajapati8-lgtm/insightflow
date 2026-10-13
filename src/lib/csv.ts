@@ -12,6 +12,9 @@ export interface ParsedCsv {
   headers: string[];
   rows: Record<string, string>[];
   roles: Record<string, Role>;
+  /** The file's text, kept so the upload can be previewed later. */
+  raw?: string;
+  size?: number;
 }
 
 const TEXT_NAMES = /^(review|feedback|text|comment|comments|message|body|content|response|answer)s?$/i;
@@ -45,20 +48,18 @@ export function detectRoles(headers: string[], rows: Record<string, string>[]): 
   return roles;
 }
 
-export function parseCsvFile(file: File): Promise<ParsedCsv> {
-  return new Promise((resolve, reject) => {
-    Papa.parse<Record<string, string>>(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (res) => {
-        const headers = (res.meta.fields ?? []).filter(Boolean);
-        if (headers.length === 0) return reject(new Error("The file has no header row. Add one, for example: review"));
-        if (res.data.length === 0) return reject(new Error("The file has a header but no rows."));
-        resolve({ fileName: file.name, headers, rows: res.data, roles: detectRoles(headers, res.data) });
-      },
-      error: (err) => reject(new Error(`Could not read the file: ${err.message}`)),
-    });
-  });
+export async function parseCsvFile(file: File): Promise<ParsedCsv> {
+  const raw = await file.text();
+  const parsed = parseCsvText(raw, file.name);
+  return { ...parsed, raw, size: file.size };
+}
+
+export function parseCsvText(raw: string, fileName: string): ParsedCsv {
+  const res = Papa.parse<Record<string, string>>(raw, { header: true, skipEmptyLines: true });
+  const headers = (res.meta.fields ?? []).filter(Boolean);
+  if (headers.length === 0) throw new Error("The file has no header row. Add one, for example: review");
+  if (res.data.length === 0) throw new Error("The file has a header but no rows.");
+  return { fileName, headers, rows: res.data, roles: detectRoles(headers, res.data) };
 }
 
 /** Groups exact repeats and applies the rule baseline so the dashboard is usable instantly. */

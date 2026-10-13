@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import type { Sentiment, Severity } from "@/lib/types";
 
@@ -149,6 +150,8 @@ export function Stat({
   value,
   note,
   onOpen,
+  href,
+  action,
   accent,
   meter,
   meterClass = "bg-bar-1",
@@ -156,28 +159,44 @@ export function Stat({
   label: string;
   value: ReactNode;
   note?: ReactNode;
+  /** Opens the evidence behind the number. The whole tile is the target. */
   onOpen?: () => void;
+  /** Goes to the page that explains the number. The whole tile is the target. */
+  href?: string;
+  /** What clicking does, shown on hover, e.g. "See the reviews". */
+  action?: string;
   accent?: ReactNode;
   meter?: number;
   meterClass?: string;
 }) {
+  const clickable = !!(onOpen || href);
+  const cover = "absolute inset-0 z-10 rounded-[20px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-attn";
   return (
-    <div className="glass lift flex min-w-0 flex-col gap-1.5 rounded-[20px] px-5 py-[18px]">
+    <div
+      className={clsx(
+        "glass lift group relative flex min-w-0 flex-col gap-1.5 rounded-[20px] px-5 py-[18px]",
+        clickable && "cursor-pointer transition-[transform,box-shadow] hover:-translate-y-0.5",
+      )}
+    >
+      {href ? (
+        <Link href={href} className={cover} aria-label={`${label}: ${action ?? "open"}`} />
+      ) : onOpen ? (
+        <button type="button" onClick={onOpen} className={cover} aria-label={`${label}: ${action ?? "see the reviews"}`} />
+      ) : null}
       <span className="flex items-center justify-between gap-2 text-[13px] text-ink-2">
         {label}
         {accent}
       </span>
-      {onOpen ? (
-        <button type="button" onClick={onOpen} className="proof self-start text-[32px] leading-tight font-semibold tracking-[-0.025em]">
-          {value}
-        </button>
-      ) : (
-        <span className="text-[32px] leading-tight font-semibold tracking-[-0.025em]">{value}</span>
-      )}
+      <span className={clsx("self-start text-[32px] leading-tight font-semibold tracking-[-0.025em]", clickable && "proof")}>{value}</span>
       {note && <span className="text-[13px] text-ink-2">{note}</span>}
       {meter !== undefined && (
         <span aria-hidden className="well mt-1.5 h-1.5 overflow-hidden rounded-full">
           <span className={clsx("block h-full rounded-full transition-[width] duration-500", meterClass)} style={{ width: `${Math.max(0, Math.min(1, meter)) * 100}%` }} />
+        </span>
+      )}
+      {clickable && (
+        <span className="pointer-events-none absolute right-4 bottom-3.5 flex items-center gap-1 text-[11px] font-semibold text-ink-2 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+          {action ?? "See the reviews"} <ArrowRight size={12} />
         </span>
       )}
     </div>

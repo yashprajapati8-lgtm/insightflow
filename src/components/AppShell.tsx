@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Map as MapIcon,
+  Wrench,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useToast } from "@/lib/toast";
@@ -28,6 +29,7 @@ const NAV = [
   { href: "/app", label: "Overview", icon: LayoutDashboard },
   { href: "/app/feedback", label: "Feedback", icon: MessageSquareText },
   { href: "/app/priorities", label: "Priorities", icon: ListOrdered },
+  { href: "/app/fixes", label: "Fixes", icon: Wrench },
   { href: "/app/tracker", label: "Tracker and report", short: "Tracker", icon: KanbanSquare },
   { href: "/app/pipeline", label: "Pipeline", icon: Workflow },
 ];
@@ -152,7 +154,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </main>
 
       {/* Mobile bottom nav */}
-      <nav aria-label="Main" className="no-print fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t border-line bg-sidebar text-sidebar-ink backdrop-blur-xl lg:hidden">
+      <nav aria-label="Main" className="no-print fixed inset-x-0 bottom-0 z-30 grid grid-cols-7 border-t border-line bg-sidebar text-sidebar-ink backdrop-blur-xl lg:hidden">
         {NAV.map(({ href, label, short, icon: Icon }) => {
           const active = isActive(href);
           return (
@@ -161,7 +163,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               href={href}
               aria-current={active ? "page" : undefined}
               className={clsx(
-                "flex h-16 min-w-0 flex-col items-center justify-center gap-1 text-[10.5px]",
+                "flex h-16 min-w-0 flex-col items-center justify-center gap-1 text-[10px]",
                 active ? "font-semibold text-sidebar-ink" : "text-sidebar-ink-2",
               )}
             >

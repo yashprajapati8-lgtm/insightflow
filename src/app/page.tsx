@@ -7,6 +7,7 @@ import { HeroFlow } from "@/components/HeroFlow";
 import { Logo } from "@/components/AppShell";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LandingMap } from "@/components/LandingMap";
+import { DustField } from "@/components/DustField";
 
 const reviews = (sample as { reviews: Review[] }).reviews;
 const rows = (sample as { rows: number }).rows;
@@ -18,8 +19,9 @@ const n = (x: number) => Math.round(x).toLocaleString("en-US");
 
 export default function Landing() {
   return (
-    <div className="min-h-screen text-ink">
-      <header className="mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-5 py-5 sm:px-8">
+    <div className="relative min-h-screen text-ink">
+      <DustField className="pointer-events-none fixed inset-0 z-0 h-svh w-full" />
+      <header className="relative z-10 mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-5 py-5 sm:px-8">
         <Link href="/" className="flex items-center gap-2.5">
           <Logo size={28} />
           <span className="text-lg font-bold tracking-[-0.01em]">InsightFlow</span>
@@ -41,7 +43,7 @@ export default function Landing() {
         </nav>
       </header>
 
-      <main>
+      <main className="relative z-10">
         <section className="mx-auto grid max-w-[1200px] items-center gap-12 px-5 pt-10 pb-20 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:pt-16">
           <div className="flex flex-col gap-6">
             <p className="glass inline-flex w-fit items-center gap-2 rounded-full px-3.5 py-1.5 text-[13px] text-ink-2">
@@ -54,15 +56,24 @@ export default function Landing() {
               InsightFlow reads every review, groups the repeats, and ranks the problems that cost your customers most. Every
               number opens the reviews behind it.
             </p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/app" className="inline-flex h-12 items-center gap-2 raised rounded-xl px-5 font-semibold hover:brightness-105">
-                Open the sample workspace <ArrowRight size={17} />
+            <div className="grid max-w-[560px] gap-3 sm:grid-cols-2">
+              <Link href="/app?demo=1" className="raised group flex flex-col gap-1 rounded-2xl px-5 py-4 hover:brightness-105">
+                <span className="flex items-center justify-between font-semibold">
+                  Try the demo <ArrowRight size={17} className="transition-transform group-hover:translate-x-0.5" />
+                </span>
+                <span className="text-[13px] opacity-75">The 7,000-review Build Battle dataset, analyzed. No sign-up.</span>
               </Link>
-              <Link href="/app/add" className="glass lift inline-flex h-12 items-center gap-2 rounded-xl px-5 font-medium">
-                <FileUp size={17} /> Import your own CSV
+              <Link href="/app/add" className="glass lift group flex flex-col gap-1 rounded-2xl px-5 py-4">
+                <span className="flex items-center justify-between font-semibold">
+                  Use your own data <FileUp size={17} />
+                </span>
+                <span className="text-[13px] text-ink-2">Import a CSV. It stays in your browser.</span>
               </Link>
             </div>
-            <p className="text-[13px] text-ink-2">No sign-up. The sample is the {n(rows)}-row Build Battle dataset, already analyzed.</p>
+            <p className="flex items-center gap-2 text-[13px] text-ink-2">
+              <ShieldCheck size={15} className="text-pos" /> Private by design: no account, nothing stored on a server. Only
+              review text is sent for analysis.
+            </p>
           </div>
           <HeroFlow
             rows={rows}
@@ -153,7 +164,7 @@ export default function Landing() {
         <section className="mx-auto max-w-[1200px] px-5 pb-20 sm:px-8">
           <div className="grid gap-6 rounded-[24px] border border-white/[0.08] bg-sidebar p-8 text-sidebar-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.08),var(--shadow)] backdrop-blur-xl sm:p-10 md:grid-cols-3">
             {[
-              { icon: ShieldCheck, title: "Nothing invented", body: "No dates in the data means no trend chart. Every claim links to real reviews." },
+              { icon: ShieldCheck, title: "Nothing passed off as real", body: "No dates means no trend chart. The map's locations are simulated and labeled so. Every claim links to real reviews." },
               { icon: Workflow, title: "Adaption does the analysis", body: "Distinct reviews run through Adaption's Adaptive Data API as one batch job." },
               { icon: ListOrdered, title: "Scores are computed", body: "The AI labels reviews. Every count and score is calculated in code you can read." },
             ].map((f) => (
@@ -167,7 +178,7 @@ export default function Landing() {
         </section>
       </main>
 
-      <footer className="border-t border-line">
+      <footer className="relative z-10 border-t border-line">
         <div className="mx-auto flex max-w-[1200px] flex-wrap justify-between gap-3 px-5 py-6 text-sm text-ink-2 sm:px-8">
           <span>InsightFlow, built for Build Battle 2026.</span>
           <span>Analysis runs on Adaption. Scores are computed in code, never by the AI.</span>

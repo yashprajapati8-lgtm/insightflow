@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Filter, Gauge, ListOrdered, PieChart, TrendingUp, Database, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/AppShell";
 import { Panel, PanelHeader, Segmented, Stat, ActNow, ButtonLink, fmt, pct } from "@/components/ui";
@@ -23,6 +23,16 @@ export default function OverviewPage() {
   const adaptionCount = useStore((s) => s.reviews.filter((r) => r.engine === "adaption").length);
   const mode = useStore((s) => s.countMode);
   const setMode = useStore((s) => s.setCountMode);
+  const resetToSample = useStore((s) => s.resetToSample);
+
+  // "Try the demo" on the homepage opens the sample, even if this browser last used its own file.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("demo") === "1") {
+      if (useStore.getState().meta.fileId || useStore.getState().meta.name !== "Build Battle sample") resetToSample();
+      window.history.replaceState(null, "", "/app");
+    }
+  }, [resetToSample]);
   const show = useEvidence((s) => s.show);
 
   const [cat, setCat] = useState("All");
@@ -130,7 +140,7 @@ export default function OverviewPage() {
                 </p>
               )}
             </div>
-            <ButtonLink href="/app/priorities" variant="primary">
+            <ButtonLink href="/app/priorities?filter=act" variant="primary">
               See priorities <ArrowRight size={16} />
             </ButtonLink>
           </div>
@@ -143,6 +153,7 @@ export default function OverviewPage() {
           value={fmt(mode === "rows" ? d.rows : reviews.length)}
           note={mode === "rows" ? `${fmt(reviews.length)} distinct reviews` : `distinct, in ${fmt(d.rows)} rows`}
           onOpen={() => show("All feedback", "", reviews)}
+          action="Read them"
           meter={1}
         />
         <Stat
@@ -150,6 +161,7 @@ export default function OverviewPage() {
           value={pct(d.totals.negative / (d.totals.all || 1))}
           note={`${fmt(d.totals.negative)} ${unit}`}
           onOpen={() => show("Negative feedback", "", d.neg)}
+          action="Read them"
           meter={d.totals.negative / (d.totals.all || 1)}
           meterClass="bg-neg"
         />
@@ -157,6 +169,8 @@ export default function OverviewPage() {
           label="Issues found"
           value={fmt(d.ranked.length)}
           note={`across ${fmt(cats.length)} categories`}
+          href="/app/priorities"
+          action="See the ranking"
           meter={d.ranked.length ? 1 : 0}
           meterClass="bg-bar-2"
         />
@@ -165,7 +179,8 @@ export default function OverviewPage() {
           value={fmt(d.actCount)}
           accent={d.actCount > 0 ? <ActNow /> : undefined}
           note={`score ${ACT_NOW} or higher`}
-          onOpen={() => show("Issues that need action now", "", top.flatMap((i) => i.reviews))}
+          href="/app/priorities?filter=act"
+          action="See what to fix"
           meter={d.actCount / (d.ranked.length || 1)}
           meterClass="bg-attn"
         />

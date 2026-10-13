@@ -1,11 +1,11 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { LayoutGroup, motion } from "motion/react";
-import { SlidersHorizontal, Check, Plus, ArrowUp, ArrowDown, Lightbulb, Quote } from "lucide-react";
+import { SlidersHorizontal, Check, Plus, ArrowUp, ArrowDown, ArrowRight, Lightbulb, Quote, Wrench } from "lucide-react";
 import { PageHeader } from "@/components/AppShell";
-import { Panel, Button, ActNow, SeverityDot, fmt, pct } from "@/components/ui";
+import { Panel, Button, ButtonLink, ActNow, SeverityDot, fmt, pct } from "@/components/ui";
 import { useStore } from "@/lib/store";
 import { rankIssues, explainRank, ACT_NOW, DEFAULT_WEIGHTS } from "@/lib/scoring";
 import { SEVERITY_LABEL } from "@/lib/taxonomy";
@@ -38,7 +38,18 @@ function Priorities() {
 
   const [picked, setPicked] = useState<string | null>(params.get("issue"));
   const [open, setOpen] = useState(false);
-  const selected = ranked.find((r) => r.id === picked) ?? ranked[0];
+  const [actOnly, setActOnly] = useState(params.get("filter") === "act");
+  const filterParam = params.get("filter");
+  useEffect(() => {
+    if (filterParam === "act") setActOnly(true);
+  }, [filterParam]);
+  const router = useRouter();
+  const trackerMap = useStore((s) => s.tracker);
+  const trackIssue = useStore((s) => s.track);
+  const toastShow = useToast((s) => s.show);
+  const actCount = ranked.filter((r) => r.score >= ACT_NOW).length;
+  const shown = actOnly && actCount > 0 ? ranked.filter((r) => r.score >= ACT_NOW) : ranked;
+  const selected = shown.find((r) => r.id === picked) ?? shown[0];
   const isDefault = (["volume", "negativity", "severity", "momentum"] as const).every((k) => weights[k] === DEFAULT_WEIGHTS[k]);
   const mostReported = [...ranked].sort((a, b) => b.rows - a.rows)[0];
   const mostReportedRank = ranked.findIndex((r) => r.id === mostReported?.id) + 1;
@@ -85,9 +96,45 @@ function Priorities() {
             {meta.hasDates && <Legend className="bg-attn" label="Momentum" />}
           </div>
 
+          {actCount > 0 && (
+            <div className={`flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-3 ${actOnly ? "bg-attn-soft" : ""}`}>
+              <p className="flex items-center gap-2 text-[13px]">
+                <ActNow />
+                {actOnly ? (
+                  <span>
+                    Showing the {fmt(actCount)} {actCount === 1 ? "issue" : "issues"} scoring {ACT_NOW} or higher. Fix these first.
+                  </span>
+                ) : (
+                  <span className="text-ink-2">
+                    {fmt(actCount)} {actCount === 1 ? "issue scores" : "issues score"} {ACT_NOW} or higher.
+                  </span>
+                )}
+              </p>
+              <span className="flex flex-wrap gap-2">
+                <Button size="sm" onClick={() => setActOnly((v) => !v)}>
+                  {actOnly ? `Show all ${fmt(ranked.length)} issues` : "Show only these"}
+                </Button>
+                {actOnly && (
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    onClick={() => {
+                      const act = ranked.filter((r) => r.score >= ACT_NOW);
+                      act.forEach((r) => !trackerMap[r.id] && trackIssue(r.id));
+                      toastShow(`${act.length} issues on the tracker. Assign them and share the report.`);
+                      router.push("/app/tracker");
+                    }}
+                  >
+                    Track {actCount === 1 ? "it" : `all ${fmt(actCount)}`} and plan the fix <ArrowRight size={14} />
+                  </Button>
+                )}
+              </span>
+            </div>
+          )}
+
           <LayoutGroup>
             <ol>
-              {ranked.map((issue, i) => {
+              {shown.map((issue, i) => {
                 const delta = (defaultRank.get(issue.id) ?? i + 1) - (i + 1);
                 const on = issue.id === selected?.id;
                 return (
@@ -265,6 +312,11 @@ function IssueDetail({ issue, all }: { issue: RankedIssue; all: RankedIssue[] })
             {tracked ? <Check size={16} /> : <Plus size={16} />} {tracked ? "Tracked" : "Track issue"}
           </Button>
           <Button onClick={() => show(issue.name, "", issue.reviews)}>View {fmt(issue.rows)} reports</Button>
+          {issue.id !== "other" && (
+            <ButtonLink href={`/app/fixes?issue=${issue.id}`}>
+              <Wrench size={15} /> Compare fixes
+            </ButtonLink>
+          )}
         </div>
       </div>
 

@@ -144,7 +144,7 @@ export default function MapPage() {
                 </Button>
               ) : (
                 <span className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-[var(--bg)]/85 px-2.5 py-1.5 text-[11px] text-ink-2 backdrop-blur-md">
-                  <MousePointerClick size={13} /> Click a state. Drag to turn, scroll to zoom.
+                  <MousePointerClick size={13} /> Click a state · drag to move · right-drag to turn · scroll to zoom
                 </span>
               )}
             </div>
@@ -202,25 +202,23 @@ function useDark() {
 }
 
 function Legend({ lens }: { lens: Lens | null }) {
+  const box = "pointer-events-auto flex flex-col gap-1.5 rounded-xl border border-line bg-[var(--bg)]/85 px-3 py-2 text-[11px] text-ink-2 backdrop-blur-md";
   if (!lens)
     return (
-      <div className="pointer-events-auto flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-line bg-[var(--bg)]/85 px-3 py-2 text-[11px] text-ink-2 backdrop-blur-md">
-        <span className="font-semibold text-ink">Each state shows its hotspot</span>
-        <span className="inline-flex items-center gap-1.5">
-          <span className="size-2.5 rounded-sm border border-line" style={{ background: "#f4f5f7" }} /> No hotspot
-        </span>
-        <span>Taller and stronger color: further above the national rate</span>
+      <div className={box}>
+        <span className="font-semibold text-ink">Each state shows the issue it has most above the national rate</span>
+        <span>Strong color and raised: a proven hotspot. Pale: above average, but within chance.</span>
       </div>
     );
   return (
-    <div className="pointer-events-auto flex flex-col gap-1.5 rounded-xl border border-line bg-[var(--bg)]/85 px-3 py-2 text-[11px] text-ink-2 backdrop-blur-md">
+    <div className={box}>
       <span className="font-semibold text-ink">{lens.name}, compared with the national rate</span>
       <div className="flex items-center gap-2">
-        <span>1×</span>
+        <span>Lowest</span>
         <span className="h-2 w-40 rounded-full" style={{ background: `linear-gradient(90deg, #f4f5f7, ${lens.color})` }} />
-        <span>3× or more</span>
+        <span>Highest</span>
       </div>
-      <span>Faded color: above average, but within chance</span>
+      <span>Strong color and raised: a proven hotspot. Pale: higher rates that chance can explain.</span>
     </div>
   );
 }
@@ -278,10 +276,24 @@ function SpreadPanel({
                     </div>
                   </div>
                 ) : (
-                  <span className="text-[12px] text-ink-2">
-                    <span className="font-semibold text-ink">Everywhere:</span> no state stands out beyond chance. One fix at the
-                    source, by {s.lens.owner}.
-                  </span>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[12px] text-ink-2">
+                      <span className="font-semibold text-ink">Everywhere:</span> no state stands out beyond chance. One fix at the
+                      source, by {s.lens.owner}.
+                    </span>
+                    {s.top && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onLens(s.lens.id);
+                          onState(s.top!.id);
+                        }}
+                        className="w-fit text-left text-[12px] text-ink-2 underline decoration-line underline-offset-4 hover:text-ink"
+                      >
+                        Highest rate: {s.top.name}, {s.topIndex.toFixed(1)}× (within chance)
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             </li>

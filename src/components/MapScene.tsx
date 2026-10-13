@@ -6,7 +6,7 @@ import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber"
 import { CameraControls, CameraControlsImpl, Html, Line } from "@react-three/drei";
 import india from "@svg-maps/india";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
-import { project, tint, indexToT, isHotspot, lensOf, type GeoModel, type Lens, type CityStat } from "@/lib/geo";
+import { project, tint, indexToT, isHotspot, lensOf, LENSES, type GeoModel, type Lens, type CityStat } from "@/lib/geo";
 import type { Review } from "@/lib/types";
 
 const S = 0.1; // svg px to world units
@@ -86,6 +86,8 @@ function Scene({ geo, lens, selected, onSelect, onOpenReview, dark, wheelZoom = 
     if (!c) return;
     c.camera.up.set(0, 0, 1);
     c.updateCameraUp();
+    // Dragging moves across the map like a paper map: up/down goes north/south, not toward the camera.
+    c.verticalDragToForward = true;
     const st = selected ? states.find((s) => s.id === selected) : null;
     if (st) {
       const d = Math.max(16, st.size * 1.7 + 10) * far;
@@ -130,6 +132,8 @@ function Scene({ geo, lens, selected, onSelect, onOpenReview, dark, wheelZoom = 
             border={border}
             depth={depth}
             dim={!!selected && selected !== s.id}
+            dimCap={dark ? "#2b3038" : "#8e949e"}
+            dimSide={dark ? "#1e2228" : "#6f757e"}
             active={selected === s.id}
             hovered={hover === s.id}
             onOver={() => setHover(s.id)}
@@ -160,10 +164,14 @@ function Scene({ geo, lens, selected, onSelect, onOpenReview, dark, wheelZoom = 
         smoothTime={0.45}
         mouseButtons={
           wheelZoom
-            ? undefined
-            : { left: A.ROTATE, middle: A.NONE, right: A.NONE, wheel: A.NONE }
+            ? { left: A.TRUCK, middle: A.DOLLY, right: A.ROTATE, wheel: A.DOLLY }
+            : { left: A.ROTATE, middle: A.NONE, right: A.TRUCK, wheel: A.NONE }
         }
-        touches={wheelZoom ? undefined : { one: A.NONE, two: A.TOUCH_DOLLY_ROTATE, three: A.NONE }}
+        touches={
+          wheelZoom
+            ? { one: A.TOUCH_TRUCK, two: A.TOUCH_DOLLY_ROTATE, three: A.TOUCH_ROTATE }
+            : { one: A.NONE, two: A.TOUCH_DOLLY_ROTATE, three: A.NONE }
+        }
       />
     </>
   );
@@ -174,18 +182,25 @@ function look(geo: GeoModel, id: string, lens: Lens | null) {
   let color = "#f4f5f7";
   let lift = 0;
   if (st) {
-    if (lens) {
-      const hot = isHotspot(st, lens.id);
-      const t = indexToT(st.index[lens.id]) * (hot ? 1 : 0.3);
-      color = tint(lens.color, t);
-      lift = hot ? t * 1.6 : 0;
-    } else if (st.main) {
-      const t = indexToT(st.main.index);
-      color = tint(st.main.lens.color, Math.max(0.25, t));
-      lift = t * 1.6;
+    const pick = lens ?? strongest(st);
+    if (pick) {
+      const hot = isHotspot(st, pick.id);
+      const max = geo.maxIndex[pick.id] ?? 1;
+      // Relative to the highest state for this issue, so the top states always show.
+      const rel = max > 1 ? Math.max(0, (st.index[pick.id] - 1) / (max - 1)) : 0;
+      const t = hot ? Math.max(0.55, indexToT(st.index[pick.id])) : rel * (lens ? 0.72 : 0.42);
+      color = tint(pick.color, t);
+      lift = hot ? indexToT(st.index[pick.id]) * 1.1 + 0.2 : 0;
     }
   }
   return { color, depth: 1 + lift };
+}
+
+function strongest(st: GeoModel["states"][string]) {
+  if (st.main) return st.main.lens;
+  let best: Lens | null = null;
+  for (const l of LENSES) if (st.index[l.id] > 1.05 && (!best || st.index[l.id] > st.index[best.id])) best = l;
+  return best;
 }
 
 function StateMesh({
@@ -195,6 +210,8 @@ function StateMesh({
   border,
   depth,
   dim,
+  dimCap,
+  dimSide,
   active,
   hovered,
   onOver,
@@ -208,6 +225,8 @@ function StateMesh({
   border: string;
   depth: number;
   dim: boolean;
+  dimCap: string;
+  dimSide: string;
   active: boolean;
   hovered: boolean;
   onOver: () => void;
@@ -228,11 +247,11 @@ function StateMesh({
     const z = (active ? 0.6 : hovered ? 0.5 : 0) + (dim ? -0.2 : 0);
     g.position.z += (z - g.position.z) * k;
     g.scale.z += (depth * (dim ? 0.6 : 1) - g.scale.z) * k;
-    target.set(dim ? "#eef0f3" : color);
+    target.set(dim ? dimCap : color);
     cap.color.lerp(target, k);
-    target.set(side);
+    target.set(dim ? dimSide : side);
     wall.color.lerp(target, k);
-    const op = dim ? 0.38 : 1;
+    const op = dim ? 0.92 : 1;
     cap.opacity += (op - cap.opacity) * k;
     wall.opacity += (op - wall.opacity) * k;
     cap.emissive.set(hovered && !dim ? "#ffffff" : "#000000");
@@ -261,7 +280,7 @@ function StateMesh({
         }}
       />
       {s.outlines.map((pts, i) => (
-        <Line key={i} points={pts} color={border} lineWidth={0.7} dashed dashSize={0.35} gapSize={0.25} transparent opacity={dim ? 0.2 : 0.75} />
+        <Line key={i} points={pts} color={border} lineWidth={0.7} dashed dashSize={0.35} gapSize={0.25} transparent opacity={dim ? 0.12 : 0.75} />
       ))}
       {label && (
         <Html position={[s.center.x, s.center.y, 1.2]} center style={{ pointerEvents: "none" }}>
@@ -373,7 +392,7 @@ function CityDomes({
         <meshStandardMaterial roughness={0.35} metalness={0.05} />
       </instancedMesh>
 
-      {cities.map((c) => {
+      {h === null && cities.map((c) => {
         const [px, py] = project(c.city.lat, c.city.lon);
         const b = toWorld(px, py);
         const R = 0.35 + 0.13 * Math.sqrt(Math.min(MAX_DOTS, c.reviews.length));
@@ -388,10 +407,10 @@ function CityDomes({
 
       {h && (
         <Html position={h.pos} center style={{ pointerEvents: "none" }} zIndexRange={[60, 50]}>
-          <div className="glass w-[260px] -translate-y-[calc(50%+18px)] rounded-xl p-3 text-[12px] leading-snug text-ink">
+          <div className="w-[270px] -translate-y-[calc(50%+18px)] rounded-xl border border-line bg-[var(--bg)] p-3 text-[12px] leading-snug text-ink shadow-[var(--shadow)]">
             <div className="mb-1 flex items-center justify-between gap-2 text-[11px] text-ink-2">
               <span>{h.city.city.name}</span>
-              <span className="font-semibold text-ink">{h.n.toLocaleString("en-US")} customers</span>
+              <span className="font-semibold text-ink">{h.n.toLocaleString("en-US")} {h.n === 1 ? "customer" : "customers"}</span>
             </div>
             <p className="quote line-clamp-3">“{h.review.text}”</p>
             <div className="mt-1.5 text-[11px] text-ink-2">Click to open the reviews</div>

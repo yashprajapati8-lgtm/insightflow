@@ -3,12 +3,13 @@
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { UploadCloud, FileSpreadsheet, Check, AlertTriangle, ArrowRight, Wand2 } from "lucide-react";
+import { UploadCloud, FileSpreadsheet, Check, AlertTriangle, ArrowRight, Wand2, ShieldCheck } from "lucide-react";
 import { PageHeader } from "@/components/AppShell";
 import { Panel, Button, ButtonLink, Segmented, SentimentChip, fmt } from "@/components/ui";
 import { useStore } from "@/lib/store";
 import { useToast } from "@/lib/toast";
 import { parseCsvFile, toReviews, type ParsedCsv, type Role } from "@/lib/csv";
+import { saveFile } from "@/lib/files";
 import { SEVERITY_LABEL, issueById } from "@/lib/taxonomy";
 import { analyzeWithRules } from "@/lib/rules";
 import type { Analysis, Review } from "@/lib/types";
@@ -132,17 +133,30 @@ function CsvImport() {
       setProgress({ done, total: targets.length, llm, note });
     }
 
-    loadDataset(
-      {
-        name: csv.fileName.replace(/\.csv$/i, ""),
-        rows: built.used,
-        distinct: reviews.length,
-        hasDates: built.hasDates,
-        hasCategory: built.hasCategory,
-        importedAt: new Date().toISOString(),
-      },
-      reviews,
-    );
+    const fileId = `f${Date.now().toString(36)}`;
+    const meta = {
+      name: csv.fileName.replace(/\.csv$/i, ""),
+      rows: built.used,
+      distinct: reviews.length,
+      hasDates: built.hasDates,
+      hasCategory: built.hasCategory,
+      importedAt: new Date().toISOString(),
+      fileId,
+    };
+    loadDataset(meta, reviews);
+    // Keep the original file in this browser so it can be previewed and reopened from Pipeline.
+    if (csv.raw)
+      await saveFile({
+        id: fileId,
+        name: csv.fileName,
+        size: csv.size ?? csv.raw.length,
+        rows: csv.rows.length,
+        importedAt: meta.importedAt,
+        raw: csv.raw,
+        roles: csv.roles,
+        meta,
+        reviews,
+      }).catch(() => toast("Analyzed, but this browser could not keep a copy of the file."));
     setFinished(true);
   }
 
@@ -196,13 +210,20 @@ function CsvImport() {
             <span className="text-base font-semibold">Drop a CSV here, or choose a file</span>
             <span className="max-w-[46ch] text-[13px] text-ink-2">
               One row per piece of feedback. The text column is found automatically. Optional columns: category, date,
-              source.
+              source, state, city.
             </span>
             <input ref={inputRef} type="file" accept=".csv,text/csv" className="sr-only" onChange={(e) => onFile(e.target.files?.[0])} />
             <Button variant="primary" onClick={() => inputRef.current?.click()}>
               <FileSpreadsheet size={16} /> Choose a CSV
             </Button>
           </label>
+          <p className="flex max-w-[640px] items-start gap-2 text-[13px] text-ink-2">
+            <ShieldCheck size={15} className="mt-0.5 shrink-0 text-pos" />
+            <span>
+              <strong className="font-semibold text-ink">Private by design.</strong> Your file stays in this browser. No account,
+              nothing stored on a server; only the review text is sent for analysis.
+            </span>
+          </p>
           {error && (
             <p role="alert" className="flex items-center gap-2 text-[13px] text-neg-fg">
               <AlertTriangle size={14} /> {error}

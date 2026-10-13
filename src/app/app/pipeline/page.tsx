@@ -5,6 +5,7 @@ import Link from "next/link";
 import { type LucideIcon, ChevronRight, FileUp, Layers, Sparkles, ShieldCheck, Calculator, Play, Loader2, Download } from "lucide-react";
 import Papa from "papaparse";
 import { PageHeader } from "@/components/AppShell";
+import { FilesStrip } from "@/components/FilesStrip";
 import { Panel, Button, fmt, pct } from "@/components/ui";
 import { useStore } from "@/lib/store";
 import { useToast } from "@/lib/toast";
@@ -259,12 +260,16 @@ export default function PipelinePage() {
           {confirming
             ? `${fmt(stats.engines.adaption)} reviews already have Adaption labels. A new run spends credits again; click once more within 5 seconds to confirm.`
             : config?.adaption === false
-              ? "Adaption is not connected on this deployment. The labels shown were produced by Adaption ahead of time and built into the sample."
+              ? stats.engines.adaption > 0
+                ? "Adaption is not connected on this deployment. The Adaption labels shown were produced ahead of time and built into the sample."
+                : "Adaption is not connected on this deployment, so these labels come from the live model or the rule baseline."
               : config?.allowRuns === false && !view.message
                 ? "The labels shown were produced by an Adaption batch run. New runs are turned off on this public demo to protect credits."
                 : view.message}
         </p>
       )}
+
+      <FilesStrip />
 
       <Panel className="overflow-x-auto p-4">
         <ol className="grid min-w-[860px] grid-cols-5 gap-0">
