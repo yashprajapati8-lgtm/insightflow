@@ -2,10 +2,11 @@
 
 import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Search, Pencil, Upload, Sparkles } from "lucide-react";
+import { Search, Pencil, Upload, Sparkles, ArrowUp } from "lucide-react";
 import { PageHeader } from "@/components/AppShell";
 import { Panel, Button, ButtonLink, Segmented, SentimentChip, EmptyState, fmt } from "@/components/ui";
 import { useStore } from "@/lib/store";
+import { revealDetail, backToRow } from "@/lib/reveal";
 import { ISSUES, OTHER_ISSUE, SEVERITY_LABEL, issueById } from "@/lib/taxonomy";
 import { useEvidence } from "@/lib/evidence";
 import { useToast } from "@/lib/toast";
@@ -129,7 +130,11 @@ function Feedback() {
                   <li key={r.id}>
                     <button
                       type="button"
-                      onClick={() => setPicked(r.id)}
+                      onClick={() => {
+                        setPicked(r.id);
+                        revealDetail();
+                      }}
+                      data-row={r.id}
                       aria-pressed={on}
                       className={`grid w-full grid-cols-1 gap-2 border-b border-line-soft px-5 py-3.5 text-left transition-colors md:grid-cols-[minmax(0,1fr)_96px_minmax(0,170px)_60px] md:items-center md:gap-3 ${
                         on ? "bg-surface-2" : "hover:bg-surface-2"
@@ -190,7 +195,8 @@ function ReviewDetail({ review }: { review: Review }) {
       : null;
 
   return (
-    <Panel className="flex flex-col gap-5 p-6 xl:sticky xl:top-6" aria-label="Review detail">
+    <Panel id="detail" className="flex scroll-mt-20 flex-col gap-5 p-6 xl:sticky xl:top-6" aria-label="Review detail">
+      <BackToList rowId={review.id} />
       <div className="flex flex-col gap-3">
         <span className="flex items-center gap-2 text-[13px] text-ink-2">
           <Sparkles size={14} aria-hidden /> {ENGINE_LABEL[review.engine]}
@@ -332,5 +338,17 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span className="text-ink-2">{label}</span>
       {children}
     </label>
+  );
+}
+
+function BackToList({ rowId }: { rowId: string }) {
+  return (
+    <button
+      type="button"
+      onClick={() => backToRow(rowId)}
+      className="-mt-1 inline-flex w-fit items-center gap-1 text-[13px] font-medium text-ink-2 hover:text-ink xl:hidden"
+    >
+      <ArrowUp size={14} aria-hidden /> Back to the list
+    </button>
   );
 }

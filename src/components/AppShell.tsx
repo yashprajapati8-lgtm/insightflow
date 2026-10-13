@@ -25,11 +25,11 @@ import { EvidenceDrawer } from "./EvidenceDrawer";
 import { fmt } from "./ui";
 
 const NAV = [
-  { href: "/app/map", label: "Map", icon: MapIcon },
   { href: "/app", label: "Overview", icon: LayoutDashboard },
   { href: "/app/feedback", label: "Feedback", icon: MessageSquareText },
   { href: "/app/priorities", label: "Priorities", icon: ListOrdered },
   { href: "/app/fixes", label: "Fixes", icon: Wrench },
+  { href: "/app/map", label: "Map", icon: MapIcon },
   { href: "/app/tracker", label: "Tracker and report", short: "Tracker", icon: KanbanSquare },
   { href: "/app/pipeline", label: "Pipeline", icon: Workflow },
 ];
@@ -136,7 +136,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Mobile top bar */}
-      <header className="no-print sticky top-0 z-30 flex h-14 items-center justify-between border-b border-white/[0.06] bg-sidebar px-4 text-sidebar-ink backdrop-blur-xl lg:hidden">
+      <header className="no-print sticky top-0 z-30 flex h-14 items-center justify-between border-b border-white/[0.06] bg-sidebar px-4 text-sidebar-ink backdrop-blur-xl backdrop-saturate-150 lg:hidden [background-image:linear-gradient(rgba(12,13,16,0.9),rgba(12,13,16,0.9))]">
         <Link href="/" className="flex items-center gap-2">
           <Logo />
           <span className="font-bold">InsightFlow</span>
@@ -154,7 +154,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </main>
 
       {/* Mobile bottom nav */}
-      <nav aria-label="Main" className="no-print fixed inset-x-0 bottom-0 z-30 grid grid-cols-7 border-t border-line bg-sidebar text-sidebar-ink backdrop-blur-xl lg:hidden">
+      <nav aria-label="Main" className="no-print fixed inset-x-0 bottom-0 z-30 grid grid-cols-7 border-t border-line bg-sidebar pb-[env(safe-area-inset-bottom)] text-sidebar-ink backdrop-blur-xl backdrop-saturate-150 lg:hidden [background-image:linear-gradient(rgba(12,13,16,0.9),rgba(12,13,16,0.9))]">
         {NAV.map(({ href, label, short, icon: Icon }) => {
           const active = isActive(href);
           return (

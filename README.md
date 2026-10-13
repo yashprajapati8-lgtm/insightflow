@@ -6,7 +6,16 @@ Built for Build Battle 2026 (Frontend Arena), AI × Web Development.
 
 - **Live app:** https://insightflow-fawn.vercel.app
 - **Repository:** https://github.com/yashprajapati8-lgtm/insightflow
-- **Demo video:** [add the link]
+
+## A 2-minute tour for judges
+
+1. **Home** → *Try the demo*. The 7,000-row Build Battle sample opens, already analyzed. No sign-up.
+2. **Overview** → click **Need action now**. Priorities opens on the two issues scoring 85 or higher, with *why it ranks here* and the real reviews behind it. **Track all and plan the fix** moves them to the Tracker.
+3. **Fixes** → hover the diagram: each problem customers describe, the fixes that solve it, and the one fix that solves the most. Click a problem to compare options (quick win, best value, most complete) with steps and evidence.
+4. **Map** → is a problem regional or everywhere? Delivery clusters in two states; fraud and app crashes do not. Locations are **simulated and labeled** (the dataset has none), and a significance test keeps chance from painting a state red.
+5. **Overview → Feedback over time → See trends with a dated example**. The sample has no dates, so InsightFlow never invents a trend; this **synthetic, labeled** file shows the trend chart and the momentum part of the score working.
+6. **Pipeline** → how 7,000 rows became the analysis, where Adaption runs, the uploaded files, and a download of Adaption's labels.
+7. **Tracker → Report** → a brief for leadership or the team, shareable as a link or saved as PDF.
 
 ## The problem, and what the data really says
 
@@ -43,6 +52,7 @@ CSV or form → Clean (group repeats) → Analyze → Validate → Score
 2. **Clean.** Exact repeats are grouped with a count, so 7,000 rows become 320 analysis calls' worth of text.
 3. **Analyze.**
    - **Adaption (batch).** The distinct reviews are uploaded to Adaption's Adaptive Data API as one dataset. Each review is mapped as **context** and one **universal prompt** asks for sentiment, aspects, severity, main complaint and matching issue as JSON. A **blueprint** enforces strict JSON; rephrasing and deduplication recipes are off so reviews are not changed. InsightFlow polls the job status and downloads the result (`src/lib/adaption.ts`).
+   - **Built into every deploy.** Before `next build`, `scripts/prepare-sample.ts` lists the Adaption datasets, downloads the newest finished InsightFlow run (a download, so no new credits) and builds its labels into the sample. If Adaption cannot be reached, the committed sample is kept and the build never fails. `GET /api/status` shows who labeled the sample on the live site.
    - **Live model (single reviews).** A review added in the app gets a label in seconds from Gemini or Grok through the Vercel AI SDK with a typed schema. It is marked *provisional* until an Adaption run confirms it.
    - **Rule baseline.** If no model is available or a call fails or times out, a deterministic rule set answers, so the app never breaks. It is also the floor that any AI must beat.
 4. **Validate.** Every model answer is parsed against a Zod schema. Invalid rows keep their previous label. People can correct any label on the Feedback page.

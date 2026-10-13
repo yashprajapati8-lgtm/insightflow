@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "@fontsource-variable/hanken-grotesk";
 import "@fontsource-variable/source-serif-4";
 import "./globals.css";
+import { MotionProvider } from "@/components/MotionProvider";
 
 export const metadata: Metadata = {
   icons: { icon: "/favicon.svg" },
@@ -19,7 +20,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body>{children}</body>
+      <body>
+        <MotionProvider>{children}</MotionProvider>
+      </body>
     </html>
   );
 }

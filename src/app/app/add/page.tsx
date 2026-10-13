@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { UploadCloud, FileSpreadsheet, Check, AlertTriangle, ArrowRight, Wand2, ShieldCheck } from "lucide-react";
@@ -13,6 +13,9 @@ import { saveFile } from "@/lib/files";
 import { SEVERITY_LABEL, issueById } from "@/lib/taxonomy";
 import { analyzeWithRules } from "@/lib/rules";
 import type { Analysis, Review } from "@/lib/types";
+import sampleData from "@/data/sample.json";
+
+const SAMPLE_REVIEWS = (sampleData as { reviews: Review[] }).reviews;
 
 type ApiResult = { results: { analysis: Analysis; engine: "llm" | "rules" }[]; note?: string; model?: string };
 
@@ -66,6 +69,7 @@ function CsvImport() {
   const [error, setError] = useState<string | null>(null);
   const [drag, setDrag] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0, llm: 0, note: "" });
+  const [reuse, setReuse] = useState({ all: 0, adaption: 0, distinct: 0 });
   const [finished, setFinished] = useState(false);
 
   const preview = (() => {
@@ -93,6 +97,25 @@ function CsvImport() {
     }
   }
 
+  async function loadExample() {
+    setError(null);
+    try {
+      const text = await fetch("/synthetic-dated-example.csv").then((r) => {
+        if (!r.ok) throw new Error();
+        return r.text();
+      });
+      await onFile(new File([text], "synthetic-dated-example.csv", { type: "text/csv" }));
+    } catch {
+      setError("The example file could not be loaded. Check your connection and try again.");
+    }
+  }
+
+  // /app/add?example=dated opens the dated example straight away (linked from the trend chart).
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("example") === "dated") loadExample();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function analyze() {
     if (!csv) return;
     let built;
@@ -104,10 +127,29 @@ function CsvImport() {
     }
     const reviews: Review[] = built.reviews;
     setStep(2);
-    const targets = reviews.slice(0, QUICK_LIMIT);
+    // Reviews already analyzed (in the sample or the current workspace) keep their labels instead of being sent again.
+    const known = new Map<string, Review>();
+    for (const r of [...SAMPLE_REVIEWS, ...useStore.getState().reviews]) {
+      const k = r.text.trim().toLowerCase();
+      const prev = known.get(k);
+      if (!prev || (prev.engine !== "adaption" && r.engine === "adaption")) known.set(k, r);
+    }
+    let reused = 0;
+    let reusedAdaption = 0;
+    for (const r of reviews) {
+      const k = known.get(r.text.trim().toLowerCase());
+      if (!k || k.engine === "rules") continue;
+      r.analysis = k.analysis;
+      r.engine = k.engine;
+      r.provisional = k.provisional;
+      reused++;
+      if (k.engine === "adaption") reusedAdaption++;
+    }
+    const targets = reviews.filter((r) => r.engine === "rules").slice(0, QUICK_LIMIT);
     const batches: Review[][] = [];
     for (let i = 0; i < targets.length; i += BATCH) batches.push(targets.slice(i, i + BATCH));
     setProgress({ done: 0, total: targets.length, llm: 0, note: "" });
+    setReuse({ all: reused, adaption: reusedAdaption, distinct: reviews.length });
 
     let done = 0;
     let llm = 0;
@@ -133,6 +175,13 @@ function CsvImport() {
       setProgress({ done, total: targets.length, llm, note });
     }
 
+    if (reused > 0)
+      setProgress((p) => ({
+        ...p,
+        note:
+          p.note ||
+          `${fmt(reused)} of ${fmt(reviews.length)} distinct reviews were already analyzed, so their labels were reused instead of being sent again.`,
+      }));
     const fileId = `f${Date.now().toString(36)}`;
     const meta = {
       name: csv.fileName.replace(/\.csv$/i, ""),
@@ -230,15 +279,22 @@ function CsvImport() {
             </p>
           )}
           <p className="text-[13px] text-ink-2">No file to hand?</p>
-          <Button
-            onClick={() => {
-              resetToSample();
-              toast("Sample dataset loaded: 7,000 rows, already analyzed");
-              router.push("/app");
-            }}
-          >
-            Use the Build Battle sample, 7,000 rows
-          </Button>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Button
+              onClick={() => {
+                resetToSample();
+                toast("Sample dataset loaded: 7,000 rows, already analyzed");
+                router.push("/app");
+              }}
+            >
+              Use the Build Battle sample, 7,000 rows
+            </Button>
+            <Button onClick={loadExample}>Try an example with dates (synthetic)</Button>
+          </div>
+          <p className="max-w-[60ch] text-center text-[12px] text-ink-3">
+            The Build Battle data has no dates. The dated example reuses its reviews with synthetic dates, so you can see
+            trends and rising issues work.
+          </p>
         </div>
       )}
 
@@ -349,8 +405,26 @@ function CsvImport() {
           <ul className="flex flex-col gap-2 border-t border-line-soft pt-4 text-sm">
             <Check2 ok label={`${fmt(preview?.used ?? 0)} rows read`} />
             <Check2 ok label={`Repeats grouped into ${fmt(preview?.reviews.length ?? 0)} distinct reviews`} />
-            <Check2 ok={finished} label={`Quick labels ready (${fmt(progress.llm)} by the live model)`} />
-            <Check2 ok={false} label="Adaption batch run: start it from the Pipeline page" />
+            <Check2
+              ok={finished}
+              label={`Labels ready: ${[
+                reuse.all ? `${fmt(reuse.all)} reused from earlier analysis` : "",
+                `${fmt(progress.llm)} by the live model`,
+                progress.total - progress.llm > 0 ? `${fmt(progress.total - progress.llm)} by the rule baseline` : "",
+              ]
+                .filter(Boolean)
+                .join(", ")}`}
+            />
+            <Check2
+              ok={reuse.adaption > 0 && reuse.adaption === reuse.distinct}
+              label={
+                reuse.adaption > 0
+                  ? `Adaption's labels reused for ${fmt(reuse.adaption)} of ${fmt(reuse.distinct)} distinct reviews${
+                      reuse.adaption < reuse.distinct ? "; run Adaption from the Pipeline page for the rest" : ""
+                    }`
+                  : "Adaption batch run: start it from the Pipeline page"
+              }
+            />
           </ul>
           <div className="flex flex-wrap justify-end gap-2">
             <ButtonLink href="/app/pipeline" variant="secondary">
@@ -367,14 +441,13 @@ function CsvImport() {
 }
 
 function Progress({ label, done, total, hint }: { label: string; done: number; total: number; hint: string }) {
-  const share = total ? done / total : 0;
+  const share = total ? done / total : 1;
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex justify-between text-[13px]">
         <span className="font-semibold">{label}</span>
         <span className="text-ink-2">
-          {done >= total && total > 0 ? "Done, " : ""}
-          {fmt(done)} of {fmt(total)}
+          {total === 0 ? "Nothing new to send" : `${done >= total ? "Done, " : ""}${fmt(done)} of ${fmt(total)}`}
         </span>
       </div>
       <div className="well h-2 overflow-hidden rounded-full" role="progressbar" aria-valuenow={Math.round(share * 100)} aria-valuemin={0} aria-valuemax={100} aria-label={label}>

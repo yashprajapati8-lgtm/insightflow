@@ -84,6 +84,10 @@ export default function OverviewPage() {
   const funnelMax = d.funnel[0].value || 1;
   const mostIssues = [...d.ranked].sort((a, b) => b.rows - a.rows).slice(0, 6);
   const filtered = cat !== "All" || sent !== "All";
+  const rising = d.rankAll
+    .filter((i) => i.momentum !== null && i.momentum > 0.3 && i.id !== "other")
+    .sort((a, b) => (b.momentum ?? 0) - (a.momentum ?? 0))
+    .slice(0, 3);
 
   return (
     <div className="flex flex-col gap-[22px] px-5 py-7 lg:px-9 lg:py-8">
@@ -347,10 +351,26 @@ export default function OverviewPage() {
             id="trend-h"
             icon={<TrendingUp size={17} />}
             title="Feedback over time"
-            subtitle={meta.hasDates ? "Weekly reports and the share that is negative." : "Trends need a date on each review."}
+            subtitle={meta.hasDates ? "Weekly reports, and which issues are growing or shrinking." : "Trends need a date on each review."}
           />
           {meta.hasDates ? (
-            <TrendChart reviews={reviews} />
+            <>
+              <TrendChart reviews={reviews} names={Object.fromEntries(d.rankAll.map((r) => [r.id, r.name]))} />
+              {rising.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 border-t border-line-soft pt-3 text-[13px]">
+                  <span className="text-ink-2">Rising in the latest third of the period:</span>
+                  {rising.map((r) => (
+                    <Link
+                      key={r.id}
+                      href={`/app/priorities?issue=${r.id}`}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-neg/40 bg-neg-bg px-2 py-1 text-[12px] font-semibold text-neg-fg hover:brightness-110"
+                    >
+                      <TrendingUp size={12} /> {r.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </>
           ) : (
             <div className="well flex flex-1 flex-col items-center justify-center gap-3 rounded-2xl px-6 py-10 text-center">
               <p className="font-semibold">This dataset has no dates, so no trend is shown</p>
@@ -358,9 +378,15 @@ export default function OverviewPage() {
                 InsightFlow does not invent a timeline. Import a CSV with a date column and this chart shows how each issue
                 grows or shrinks week by week.
               </p>
-              <ButtonLink href="/app/add" size="sm" variant="primary">
-                Import dated feedback
-              </ButtonLink>
+              <div className="flex flex-wrap justify-center gap-2">
+                <ButtonLink href="/app/add?example=dated" size="sm" variant="primary">
+                  See trends with a dated example
+                </ButtonLink>
+                <ButtonLink href="/app/add" size="sm">
+                  Import your own
+                </ButtonLink>
+              </div>
+              <p className="text-[11px] text-ink-3">The example reuses these reviews with synthetic dates.</p>
             </div>
           )}
         </Panel>

@@ -3,11 +3,12 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { GripVertical, Link2, Printer, StickyNote } from "lucide-react";
+import { GripVertical, Link2, Printer, StickyNote, ArrowUp } from "lucide-react";
 import { PageHeader } from "@/components/AppShell";
 import { Panel, Button, ButtonLink, Segmented, ActNow, EmptyState, fmt } from "@/components/ui";
 import { ReportView } from "@/components/ReportView";
 import { useStore } from "@/lib/store";
+import { revealDetail, backToRow } from "@/lib/reveal";
 import { rankIssues, ACT_NOW } from "@/lib/scoring";
 import { useToast } from "@/lib/toast";
 import { buildReport, encodeReport, SECTION_LABELS, type SectionKey } from "@/lib/report";
@@ -121,7 +122,11 @@ function Board() {
                         setDrag(null);
                         setOver(null);
                       }}
-                      onClick={() => setSel(t.issueId)}
+                      onClick={() => {
+                        setSel(t.issueId);
+                        revealDetail();
+                      }}
+                      data-row={t.issueId}
                       aria-pressed={on}
                       className={`glass lift flex cursor-grab flex-col gap-1.5 rounded-2xl p-3.5 text-left active:cursor-grabbing ${
                         on ? "!border-attn/70" : ""
@@ -153,7 +158,14 @@ function Board() {
       </section>
 
       {current && (
-        <Panel className="flex flex-col gap-5 p-5 xl:sticky xl:top-6" aria-label="Issue detail">
+        <Panel id="detail" className="flex scroll-mt-20 flex-col gap-5 p-5 xl:sticky xl:top-6" aria-label="Issue detail">
+          <button
+            type="button"
+            onClick={() => backToRow(current.t.issueId)}
+            className="-mt-1 inline-flex w-fit items-center gap-1 text-[13px] font-medium text-ink-2 hover:text-ink xl:hidden"
+          >
+            <ArrowUp size={14} aria-hidden /> Back to the board
+          </button>
           <div className="flex flex-col gap-1">
             <span className="text-[13px] text-ink-2">
               Score {Math.round(current.issue.score)}, owned by {current.issue.owner}

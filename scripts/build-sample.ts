@@ -29,20 +29,26 @@ for (const r of rows) {
 
 const distinct = [...groups.values()].sort((a, b) => b.count - a.count);
 
-// Optional Adaption results, keyed by review id (r001...).
+// Optional Adaption results, keyed by review id (r001...) and, as a fallback, by the review text.
 const adaption = new Map<string, string>();
+const byText = new Map<string, string>();
+const norm = (t: string) => t.trim().toLowerCase();
 if (existsSync("data/adaption-output.csv")) {
   const out = Papa.parse<Record<string, string>>(readFileSync("data/adaption-output.csv", "utf8"), {
     header: true,
     skipEmptyLines: true,
   }).data;
-  for (const o of out) if (o.id && o.completion) adaption.set(o.id, o.completion);
+  for (const o of out) {
+    if (!o.completion) continue;
+    if (o.id) adaption.set(o.id, o.completion);
+    if (o.review) byText.set(norm(o.review), o.completion);
+  }
 }
 
 let fromAdaption = 0;
 const reviews: Review[] = distinct.map((g, i) => {
   const id = `r${String(i + 1).padStart(3, "0")}`;
-  const raw = adaption.get(id);
+  const raw = byText.get(norm(g.text)) ?? adaption.get(id);
   const parsed = raw ? parseAnalysis(raw) : null;
   if (parsed) fromAdaption++;
   return {

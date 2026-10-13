@@ -4,12 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "tsx scripts/prepare-sample.ts && next build",
     "start": "next start",
     "lint": "next lint",
     "build:sample": "tsx scripts/build-sample.ts",
     "build:gold": "tsx scripts/build-gold.ts",
-    "build:locations": "tsx scripts/build-locations.ts"
+    "build:locations": "tsx scripts/build-locations.ts",
+    "build:example": "tsx scripts/build-example.ts",
+    "prepare:sample": "tsx scripts/prepare-sample.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.93",

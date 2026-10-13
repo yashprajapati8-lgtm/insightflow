@@ -9,6 +9,7 @@ import { FilesStrip } from "@/components/FilesStrip";
 import { Panel, Button, fmt, pct } from "@/components/ui";
 import { useStore } from "@/lib/store";
 import { useToast } from "@/lib/toast";
+import { useEvidence } from "@/lib/evidence";
 import { analyzeWithRules } from "@/lib/rules";
 import gold from "@/data/gold.json";
 import type { Analysis, Review } from "@/lib/types";
@@ -48,6 +49,8 @@ export default function PipelinePage() {
   }, [reviews]);
 
   const goldScore = useMemo(() => scoreGold(reviews), [reviews]);
+  const compare = useMemo(() => compareWithRules(reviews), [reviews]);
+  const showEvidence = useEvidence((s) => s.show);
 
   /** Saves Adaption's labels as a CSV, so they can be built into the shipped sample (npm run build:sample). */
   function downloadLabels() {
@@ -264,7 +267,9 @@ export default function PipelinePage() {
                 ? "Adaption is not connected on this deployment. The Adaption labels shown were produced ahead of time and built into the sample."
                 : "Adaption is not connected on this deployment, so these labels come from the live model or the rule baseline."
               : config?.allowRuns === false && !view.message
-                ? "The labels shown were produced by an Adaption batch run. New runs are turned off on this public demo to protect credits."
+                ? stats.engines.adaption > 0
+                  ? "The labels shown were produced by an Adaption batch run. New runs are turned off on this public demo to protect credits."
+                  : "New Adaption runs are turned off on this public demo to protect credits. Until a run's labels are built in, the live model and the rule baseline label the reviews."
                 : view.message}
         </p>
       )}
@@ -360,8 +365,9 @@ export default function PipelinePage() {
               Is the AI right?
             </h2>
             <p className="text-[13px] text-ink-2">
-              Checked against reviews labeled by hand, including the mixed and tricky ones. The rule baseline is the floor any
-              AI must beat.
+              {goldScore
+                ? "Checked against reviews labeled by hand, including the mixed and tricky ones. The rule baseline is the floor any AI must beat."
+                : "The rule baseline is the floor any AI must beat, so the AI's labels are shown next to it."}
             </p>
           </div>
           {goldScore ? (
@@ -383,9 +389,52 @@ export default function PipelinePage() {
                 ))}
               </tbody>
             </table>
+          ) : compare ? (
+            <div className="flex flex-col gap-3">
+              <p className="text-[12px] text-ink-2">
+                No hand-labeled answer key yet, so no accuracy is claimed. Instead, the AI labels are compared with the rule
+                baseline on the same {fmt(compare.n)} reviews.
+              </p>
+              <dl className="grid grid-cols-3 gap-2 text-center">
+                {[
+                  ["Same sentiment", pct(compare.agree / compare.n)],
+                  ["Mixed reviews found", `${fmt(compare.aiMixed)} vs ${fmt(compare.rulesMixed)}`],
+                  ["Aspects per review", `${compare.aiAspects.toFixed(1)} vs ${compare.rulesAspects.toFixed(1)}`],
+                ].map(([k, v]) => (
+                  <div key={k} className="well flex flex-col gap-0.5 rounded-xl px-2 py-2.5">
+                    <dt className="text-[11px] text-ink-2">{k}</dt>
+                    <dd className="text-[15px] font-semibold tabular-nums">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="text-[11px] text-ink-3">AI first, rules second.</p>
+              {compare.diffs.length > 0 && (
+                <div className="flex flex-col gap-1.5">
+                  <h3 className="text-[13px] font-semibold">Where they disagree, most repeated first</h3>
+                  <ul className="flex flex-col gap-1.5">
+                    {compare.diffs.slice(0, 4).map((d) => (
+                      <li key={d.r.id}>
+                        <button
+                          type="button"
+                          onClick={() => showEvidence("AI and rules disagree", `Rules: ${d.rules}. ${d.engine}: ${d.r.analysis.sentiment}.`, [d.r])}
+                          className="flex w-full flex-col gap-1 rounded-xl border border-line px-3 py-2 text-left hover:border-ink-3"
+                        >
+                          <span className="quote line-clamp-2 text-[13px]">“{d.r.text}”</span>
+                          <span className="text-[11px] text-ink-2">
+                            Rules: <strong className="text-ink">{d.rules}</strong> · {d.engine}:{" "}
+                            <strong className="text-ink">{d.r.analysis.sentiment}</strong> · ×{fmt(d.r.count)}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           ) : (
             <p className="well rounded-2xl px-4 py-6 text-center text-[13px] text-ink-2">
-              The hand-labeled check set has not been added yet, so no accuracy is claimed.
+              The hand-labeled check set has not been added yet, and no AI labels exist for this dataset yet, so no accuracy is
+              claimed.
             </p>
           )}
           <Link href="/app/feedback" className="text-[13px] font-medium underline underline-offset-4">
@@ -411,6 +460,29 @@ function JobBadge({ view, configured }: { view: JobView; configured?: boolean })
 }
 
 type GoldItem = { text: string; sentiment: string; severity: string };
+
+/** Compares AI labels (Adaption or the live model) with the rule baseline on the same reviews. */
+function compareWithRules(reviews: Review[]) {
+  const ai = reviews.filter((r) => r.engine !== "rules" && !r.corrected);
+  if (!ai.length) return null;
+  let agree = 0;
+  let aiMixed = 0;
+  let rulesMixed = 0;
+  let aiAspects = 0;
+  let rulesAspects = 0;
+  const diffs: { r: Review; rules: string; engine: string }[] = [];
+  for (const r of ai) {
+    const base = analyzeWithRules(r.text);
+    if (base.sentiment === r.analysis.sentiment) agree++;
+    else diffs.push({ r, rules: base.sentiment, engine: r.engine === "adaption" ? "Adaption" : "Live model" });
+    if (r.analysis.sentiment === "mixed") aiMixed++;
+    if (base.sentiment === "mixed") rulesMixed++;
+    aiAspects += r.analysis.aspects.length;
+    rulesAspects += base.aspects.length;
+  }
+  diffs.sort((a, b) => b.r.count - a.r.count);
+  return { n: ai.length, agree, aiMixed, rulesMixed, aiAspects: aiAspects / ai.length, rulesAspects: rulesAspects / ai.length, diffs };
+}
 
 function scoreGold(reviews: Review[]) {
   const items = gold as GoldItem[];

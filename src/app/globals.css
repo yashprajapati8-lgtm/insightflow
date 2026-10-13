@@ -10,7 +10,7 @@
   --line-soft: rgba(20, 24, 32, 0.06);
   --ink: #151a24;
   --ink-2: #525c6d;
-  --ink-3: #8a93a3;
+  --ink-3: #646c7c;
   --primary: #151a24;
   --on-primary: #ffffff;
   --attn: #f2b544;
@@ -61,7 +61,7 @@
   --line-soft: rgba(255, 255, 255, 0.06);
   --ink: #f2f3f5;
   --ink-2: rgba(242, 243, 245, 0.64);
-  --ink-3: rgba(242, 243, 245, 0.4);
+  --ink-3: rgba(242, 243, 245, 0.52);
   --primary: #f4f5f7;
   --on-primary: #1b1d21;
   --attn: #f2b544;

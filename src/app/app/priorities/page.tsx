@@ -7,6 +7,7 @@ import { SlidersHorizontal, Check, Plus, ArrowUp, ArrowDown, ArrowRight, Lightbu
 import { PageHeader } from "@/components/AppShell";
 import { Panel, Button, ButtonLink, ActNow, SeverityDot, fmt, pct } from "@/components/ui";
 import { useStore } from "@/lib/store";
+import { revealDetail, backToRow } from "@/lib/reveal";
 import { rankIssues, explainRank, ACT_NOW, DEFAULT_WEIGHTS } from "@/lib/scoring";
 import { SEVERITY_LABEL } from "@/lib/taxonomy";
 import { useEvidence } from "@/lib/evidence";
@@ -141,13 +142,17 @@ function Priorities() {
                   <motion.li key={issue.id} layout transition={{ type: "spring", stiffness: 420, damping: 38 }} className="border-b border-line-soft last:border-0">
                     <button
                       type="button"
-                      onClick={() => setPicked(issue.id)}
+                      onClick={() => {
+                        setPicked(issue.id);
+                        revealDetail();
+                      }}
+                      data-row={issue.id}
                       aria-pressed={on}
-                      className={`grid w-full grid-cols-[30px_minmax(0,1fr)_minmax(70px,140px)_38px] items-center gap-3 px-5 py-3.5 text-left transition-colors ${
+                      className={`grid w-full grid-cols-[24px_minmax(0,1fr)_38px] items-center gap-x-3 gap-y-2 px-5 py-3.5 text-left transition-colors sm:grid-cols-[30px_minmax(0,1fr)_minmax(70px,140px)_38px] sm:gap-3 ${
                         on ? "bg-surface-2" : "hover:bg-surface-2"
                       }`}
                     >
-                      <span className="flex flex-col items-start leading-tight">
+                      <span className="col-start-1 row-start-1 flex flex-col items-start self-start pt-0.5 leading-tight sm:col-start-auto sm:row-start-auto sm:self-center sm:pt-0">
                         <span className="text-[13px] text-ink-2">{i + 1}</span>
                         {!isDefault && delta !== 0 && (
                           <span className={`flex items-center text-[11px] font-semibold ${delta > 0 ? "text-pos" : "text-neg"}`}>
@@ -156,17 +161,21 @@ function Priorities() {
                           </span>
                         )}
                       </span>
-                      <span className="flex min-w-0 flex-col gap-0.5">
+                      <span className="col-start-2 row-start-1 flex min-w-0 flex-col gap-0.5 sm:col-start-auto sm:row-start-auto">
                         <span className="flex flex-wrap items-center gap-2">
                           <span className="text-[15px] font-semibold">{issue.name}</span>
                           {issue.score >= ACT_NOW && <ActNow />}
                         </span>
-                        <span className="truncate text-[13px] text-ink-2">
+                        <span className="text-[13px] text-ink-2 sm:truncate">
                           {fmt(issue.rows)} reports from {issue.distinct} {issue.distinct === 1 ? "phrasing" : "phrasings"}, {issue.owner}
                         </span>
                       </span>
-                      <ScoreBar issue={issue} />
-                      <span className="text-right text-base font-semibold">{Math.round(issue.score)}</span>
+                      <span className="col-start-2 row-start-2 sm:col-start-auto sm:row-start-auto">
+                        <ScoreBar issue={issue} />
+                      </span>
+                      <span className="col-start-3 row-start-1 self-start text-right text-base font-semibold sm:col-start-auto sm:row-start-auto sm:self-center">
+                        {Math.round(issue.score)}
+                      </span>
                     </button>
                   </motion.li>
                 );
@@ -289,7 +298,14 @@ function IssueDetail({ issue, all }: { issue: RankedIssue; all: RankedIssue[] })
   ];
 
   return (
-    <Panel ref={ref} className="flex flex-col gap-6 p-6 xl:sticky xl:top-6" aria-label="Issue detail">
+    <Panel ref={ref} id="detail" className="flex scroll-mt-20 flex-col gap-6 p-6 xl:sticky xl:top-6" aria-label="Issue detail">
+      <button
+        type="button"
+        onClick={() => backToRow(issue.id)}
+        className="-mt-2 inline-flex w-fit items-center gap-1 text-[13px] font-medium text-ink-2 hover:text-ink xl:hidden"
+      >
+        <ArrowUp size={14} aria-hidden /> Back to the ranking
+      </button>
       <div className="flex flex-col gap-2">
         <span className="flex items-center gap-2 text-[13px] text-ink-2">
           <SeverityDot value={issue.severity} />
