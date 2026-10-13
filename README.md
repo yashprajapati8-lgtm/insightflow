@@ -4,7 +4,8 @@
 
 Built for Build Battle 2026 (Frontend Arena), AI × Web Development.
 
-- **Live app:** [add the Vercel link]
+- **Live app:** https://insightflow-fawn.vercel.app
+- **Repository:** https://github.com/yashprajapati8-lgtm/insightflow
 - **Demo video:** [add the link]
 
 ## The problem, and what the data really says
